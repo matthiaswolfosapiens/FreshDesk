@@ -4,11 +4,11 @@
     "description": "For local development, enter: http://localhost:8501",
     "type": "text",
     "required": true,
-    "default_value": "http://localhost:8501"
+    "default_value": "http://localhost:8000"
   },
   "api_key": {
     "display_name": "Backend API Key",
-    "description": "The API key for your chatbot backend service (can be any value for local testing).",
+    "description": "The API key for your chatbot backend service.",
     "type": "text",
     "secure": true,
     "required": false

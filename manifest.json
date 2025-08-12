@@ -1,5 +1,5 @@
 {
-  "platform-version": "2.2",
+  "platform-version": "2.3",
   "product": {
     "freshdesk": {
       "location": {
@@ -10,11 +10,17 @@
       }
     }
   },
-  "whitelisted-domains": [
-    "<%= iparam.backend_url %>"
+  "features": {
+    "request": {},
+    "data": {},
+    "iparams": {}
+  },
+  "outbound-domains": [
+    "localhost",
+    "api.osapiens.com"
   ],
   "engines": {
-    "node": "14.21.3",
-    "fdk": "8.6.7"
+    "node": "18.20.8",
+    "fdk": "9.6.0"
   }
 }

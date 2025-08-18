@@ -4,20 +4,66 @@
   <meta charset="UTF-8">
   <title>AI Reply Helper</title>
   <link rel="stylesheet" type="text/css" href="https://static.freshdev.io/fdk/2.0/assets/freshworks.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <link rel="stylesheet" type="text/css" href="styles/reply_helper.css">
   <script src="{{{appclient}}}"></script>
 </head>
 <body>
 <div class="reply-helper-container">
-  <h4>AI Assistant</h4>
-  <div class="button-group">
-    <button id="draft-reply-btn" class="fw-button fw-button--primary">Draft Reply</button>
-    <button id="summarize-btn" class="fw-button">Summarize</button>
+
+  <div id="initial-view">
+    <h4>AI Assistant</h4>
+    <p>Choose an action to get started.</p>
+    <div class="button-group">
+      <button id="draft-reply-btn" class="fw-button fw-button--primary">
+        <i class="fas fa-pencil-alt"></i> Draft Reply
+      </button>
+      <button id="summarize-btn" class="fw-button">
+        <i class="fas fa-align-left"></i> Summarize
+      </button>
+    </div>
   </div>
-  <div id="loading-spinner" class="spinner-container hidden">
-    <div class="spinner"></div>
-    <span id="loading-text">Generating...</span>
+
+  <div id="loading-view" class="hidden">
+    <div class="spinner-container">
+      <div class="spinner"></div>
+      <span id="loading-text">Generating...</span>
+    </div>
   </div>
+
+  <div id="draft-view" class="hidden">
+    <div class="view-header">
+      <button id="draft-back-btn" class="back-button"><i class="fas fa-arrow-left"></i> Back</button>
+      <h4>Generated Draft</h4>
+    </div>
+    <div id="draft-text-content" class="content-box"></div>
+    <div id="draft-actions-initial" class="button-group">
+      <button id="accept-btn" class="fw-button fw-button--success">
+        <i class="fas fa-check"></i> Accept
+      </button>
+      <button id="discard-btn" class="fw-button fw-button--danger">
+        <i class="fas fa-times"></i> Discard
+      </button>
+    </div>
+    <div id="draft-actions-discarded" class="button-group hidden">
+      <p>Do you want to generate a new draft?</p>
+      <button id="regenerate-btn" class="fw-button fw-button--primary">
+        <i class="fas fa-sync-alt"></i> Regenerate
+      </button>
+      <button id="close-btn" class="fw-button">
+        <i class="fas fa-door-closed"></i> Close
+      </button>
+    </div>
+  </div>
+
+  <div id="summary-view" class="hidden">
+    <div class="view-header">
+      <button id="summary-back-btn" class="back-button"><i class="fas fa-arrow-left"></i> Back</button>
+      <h4>Ticket Summary</h4>
+    </div>
+    <div id="summary-text-content" class="content-box"></div>
+  </div>
+
 </div>
 <script src="reply_helper.js"></script>
 </body>

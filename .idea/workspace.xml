@@ -5,13 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a02ac437-7bd9-4fca-a43a-6bca63bfb189" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/reply_helper.html" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/reply_helper.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/styles/reply_helper.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/modal.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/modal.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/requests.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/requests.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/reply_helper.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/reply_helper.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/reply_helper.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/reply_helper.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/styles/reply_helper.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/styles/reply_helper.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

@@ -1,45 +1,50 @@
-/**
- * reply_helper.js
- * This script provides AI-powered actions ("Draft Reply", "Summarize")
- * inside the ticket conversation editor.
- */
 document.addEventListener('DOMContentLoaded', () => {
 
-    /**
-     * Main async function to initialize the app logic.
-     * This avoids race conditions by ensuring the client object is initialized first.
-     */
     async function initReplyHelper() {
-        // --- DOM Element Selection ---
-        const draftReplyBtn = document.getElementById('draft-reply-btn');
-        const summarizeBtn = document.getElementById('summarize-btn');
-
         // --- Core App Initialization ---
         let client;
         try {
             client = await app.initialized();
         } catch (error) {
             console.error("Reply Helper initialization failed:", error);
-            if (draftReplyBtn) draftReplyBtn.disabled = true;
-            if (summarizeBtn) summarizeBtn.disabled = true;
             return;
         }
 
-        // --- Helper Functions (self-contained) ---
+        // --- DOM Element Selection for all views ---
+        const views = {
+            initial: document.getElementById('initial-view'),
+            loading: document.getElementById('loading-view'),
+            draft: document.getElementById('draft-view'),
+            summary: document.getElementById('summary-view'),
+        };
 
-        /** Shows or hides the loading spinner. */
-        function showLoading(isLoading, text = 'Generating...') {
-            const spinner = document.getElementById('loading-spinner');
-            const loadingText = document.getElementById('loading-text');
-            const buttons = document.querySelectorAll('.button-group button');
+        const buttons = {
+            draftReply: document.getElementById('draft-reply-btn'),
+            summarize: document.getElementById('summarize-btn'),
+            accept: document.getElementById('accept-btn'),
+            discard: document.getElementById('discard-btn'),
+            regenerate: document.getElementById('regenerate-btn'),
+            close: document.getElementById('close-btn'),
+            draftBack: document.getElementById('draft-back-btn'),
+            summaryBack: document.getElementById('summary-back-btn'),
+        };
 
-            buttons.forEach(btn => btn.disabled = isLoading);
+        const content = {
+            loadingText: document.getElementById('loading-text'),
+            draftText: document.getElementById('draft-text-content'),
+            summaryText: document.getElementById('summary-text-content'),
+        };
 
-            if (isLoading) {
-                loadingText.textContent = text;
-                spinner.classList.remove('hidden');
-            } else {
-                spinner.classList.add('hidden');
+        const draftActionGroups = {
+            initial: document.getElementById('draft-actions-initial'),
+            discarded: document.getElementById('draft-actions-discarded'),
+        };
+
+        // --- View Management ---
+        function showView(viewName) {
+            Object.values(views).forEach(view => view.classList.add('hidden'));
+            if (views[viewName]) {
+                views[viewName].classList.remove('hidden');
             }
         }
 
@@ -82,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return header + formattedParts.join('\n');
         }
 
-        /** Fetches the full ticket context (conversations) and the product type. */
         async function getTicketContextAndProductType() {
             const ticketData = await client.data.get('ticket');
             const productType = ticketData.ticket.custom_fields.application;
@@ -93,71 +97,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const conversations = safeParseResponse(conversationData);
             const context = (conversations && conversations.length > 0) ? formatConversations(conversations) : '';
-            return { context, productType, ticketId: ticketData.ticket.id };
+            return { context, productType };
         }
 
-        // --- Event Listeners ---
-
-        /** Handles click on the "Draft Reply" button. */
-        draftReplyBtn.addEventListener('click', async () => {
-            showLoading(true, 'Drafting reply...');
+        // --- Main Logic Functions ---
+        async function handleDraftReply() {
+            content.loadingText.textContent = 'Drafting reply...';
+            showView('loading');
             try {
-                const { context, productType, ticketId } = await getTicketContextAndProductType();
-                const payload = {
-                    ticket_conversation_context: context,
-                    product_type: productType,
-                    ticket_id: ticketId
-                };
+                const { context, productType } = await getTicketContextAndProductType();
+                const payload = { ticket_conversation_context: context, product_type: productType };
 
-                const responseData = await client.request.invokeTemplate("postDraftReply", {
-                    body: JSON.stringify(payload)
-                });
-
+                const responseData = await client.request.invokeTemplate("postDraftReply", { body: JSON.stringify(payload) });
                 const response = safeParseResponse(responseData);
 
                 if (response && response.draft) {
-                    await client.interface.trigger("setValue", { id: "editor", text: response.draft });
+                    content.draftText.textContent = response.draft;
+                    buttons.accept.dataset.draft = response.draft; // Store the draft here
+
+                    draftActionGroups.initial.classList.remove('hidden');
+                    draftActionGroups.discarded.classList.add('hidden');
+                    showView('draft');
                 } else {
-                    throw new Error("Invalid response format from draft reply service.");
+                    throw new Error("Invalid response from draft service.");
                 }
-
             } catch (error) {
-                console.error("Failed to draft reply:", error);
                 client.interface.trigger("showNotify", { type: "danger", message: `Could not draft reply: ${getErrorMessage(error)}` });
-            } finally {
-                showLoading(false);
+                showView('initial');
             }
-        });
+        }
 
-        /** Handles click on the "Summarize" button. */
-        summarizeBtn.addEventListener('click', async () => {
-            showLoading(true, 'Summarizing...');
+        async function handleSummarize() {
+            content.loadingText.textContent = 'Summarizing...';
+            showView('loading');
             try {
-                const { context, ticketId } = await getTicketContextAndProductType();
-                const payload = {
-                    ticket_conversation_context: context,
-                    ticket_id: ticketId
-                };
+                const { context } = await getTicketContextAndProductType();
+                const payload = { ticket_conversation_context: context };
 
-                const responseData = await client.request.invokeTemplate("postSummarize", {
-                    body: JSON.stringify(payload)
-                });
-
+                const responseData = await client.request.invokeTemplate("postSummarize", { body: JSON.stringify(payload) });
                 const response = safeParseResponse(responseData);
 
                 if (response && response.summary) {
-                    await client.interface.trigger("setValue", { id: "editor", text: response.summary, options: { isNote: true } });
+                    content.summaryText.textContent = response.summary;
+                    showView('summary');
                 } else {
-                    throw new Error("Invalid response format from summarize service.");
+                    throw new Error("Invalid response from summarize service.");
                 }
-
             } catch (error) {
-                console.error("Failed to summarize:", error);
                 client.interface.trigger("showNotify", { type: "danger", message: `Could not summarize: ${getErrorMessage(error)}` });
-            } finally {
-                showLoading(false);
+                showView('initial');
+            }
+        }
+
+        // --- Event Listeners ---
+        buttons.draftReply.addEventListener('click', handleDraftReply);
+        buttons.summarize.addEventListener('click', handleSummarize);
+
+        // Back buttons
+        buttons.draftBack.addEventListener('click', () => showView('initial'));
+        buttons.summaryBack.addEventListener('click', () => showView('initial'));
+
+        // Draft action buttons
+        buttons.accept.addEventListener('click', async () => {
+            try {
+                const draftToInsert = buttons.accept.dataset.draft || '';
+                await client.interface.trigger("setValue", { id: "editor", text: draftToInsert });
+                client.interface.trigger("showNotify", { type: "success", message: "Draft inserted into reply." });
+                showView('initial');
+            } catch (error) {
+                console.error("Failed to set editor value:", error);
+                client.interface.trigger("showNotify", { type: "danger", message: "Could not insert draft." });
             }
         });
+
+        buttons.discard.addEventListener('click', () => {
+            draftActionGroups.initial.classList.add('hidden');
+            draftActionGroups.discarded.classList.remove('hidden');
+        });
+
+        buttons.regenerate.addEventListener('click', handleDraftReply);
+
+        buttons.close.addEventListener('click', () => showView('initial'));
+
+        // --- Initial State ---
+        showView('initial');
     }
 
     initReplyHelper();

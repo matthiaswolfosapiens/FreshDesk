@@ -11,13 +11,19 @@
         "getProductTypes": {},
         "postQuery": {},
         "postRating": {},
-        "getTicketConversations": {}
+        "getTicketConversations": {},
+        "postDraftReply": {},
+        "postSummarize": {}
       }
     },
     "support_ticket": {
       "location": {
         "ticket_sidebar": {
           "url": "index.html",
+          "icon": "styles/images/icon.svg"
+        },
+        "ticket_conversation_editor": {
+          "url": "reply_helper.html",
           "icon": "styles/images/icon.svg"
         }
       }

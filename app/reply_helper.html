@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>AI Reply Helper</title>
+  <link rel="stylesheet" type="text/css" href="https://static.freshdev.io/fdk/2.0/assets/freshworks.css">
+  <link rel="stylesheet" type="text/css" href="styles/reply_helper.css">
+  <script src="{{{appclient}}}"></script>
+</head>
+<body>
+<div class="reply-helper-container">
+  <h4>AI Assistant</h4>
+  <div class="button-group">
+    <button id="draft-reply-btn" class="fw-button fw-button--primary">Draft Reply</button>
+    <button id="summarize-btn" class="fw-button">Summarize</button>
+  </div>
+  <div id="loading-spinner" class="spinner-container hidden">
+    <div class="spinner"></div>
+    <span id="loading-text">Generating...</span>
+  </div>
+</div>
+<script src="reply_helper.js"></script>
+</body>
+</html>

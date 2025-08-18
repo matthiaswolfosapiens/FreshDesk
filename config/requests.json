@@ -6,7 +6,7 @@
       "host": "<%= iparam.backend_url %>",
       "path": "/product-types",
       "headers": {
-        "Authorization": "Bearer osapiens123"
+        "Authorization": "Bearer <%= iparam.api_key %>"
       }
     }
   },
@@ -17,7 +17,7 @@
       "host": "<%= iparam.backend_url %>",
       "path": "/query",
       "headers": {
-        "Authorization": "Bearer osapiens123",
+        "Authorization": "Bearer <%= iparam.api_key %>",
         "Content-Type": "application/json"
       }
     }
@@ -29,7 +29,31 @@
       "host": "<%= iparam.backend_url %>",
       "path": "/rate",
       "headers": {
-        "Authorization": "Bearer osapiens123",
+        "Authorization": "Bearer <%= iparam.api_key %>",
+        "Content-Type": "application/json"
+      }
+    }
+  },
+  "postDraftReply": {
+    "schema": {
+      "protocol": "http",
+      "method": "POST",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/draft-reply",
+      "headers": {
+        "Authorization": "Bearer <%= iparam.api_key %>",
+        "Content-Type": "application/json"
+      }
+    }
+  },
+  "postSummarize": {
+    "schema": {
+      "protocol": "http",
+      "method": "POST",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/summarize",
+      "headers": {
+        "Authorization": "Bearer <%= iparam.api_key %>",
         "Content-Type": "application/json"
       }
     }
@@ -40,7 +64,7 @@
       "host": "<%= iparam.freshdesk_domain %>",
       "path": "/api/v2/tickets/<%= context.ticket_id %>/conversations",
       "headers": {
-        "Authorization": "<%= encode(iparam.freshdesk_api_key) %>",
+        "Authorization": "Basic <%= encode(iparam.freshdesk_api_key + ':X') %>",
         "Content-Type": "application/json"
       }
     }

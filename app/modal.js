@@ -4,47 +4,57 @@
  * that runs inside the modal window.
  */
 document.addEventListener('DOMContentLoaded', () => {
-
-    /**
-     * Main async function to initialize the app logic inside the modal.
-     * This structure avoids race conditions by ensuring the client object is available
-     * before any other logic runs.
-     */
     async function initModal() {
-        // --- DOM Element Selection ---
         const chatHistoryEl = document.getElementById('chat-history');
         const chatForm = document.getElementById('chat-form');
         const userInputEl = document.getElementById('user-input');
         const sendButton = document.getElementById('send-button');
         const productTypesContainer = document.getElementById('product-types-container');
         const useTicketContextCheckbox = document.getElementById('use-ticket-context');
-        const chatHistory = []; // Use const as the array reference itself doesn't change
+        const chatHistory = [];
 
-        // --- Core App Initialization ---
         let client;
         try {
             client = await app.initialized();
         } catch (error) {
             console.error("Modal initialization failed:", error);
             renderMessage('error', 'Could not initialize the app. Please try closing and reopening the modal.');
-            return; // Stop execution if client fails to initialize
+            return;
+        }
+
+        // --- Helper Function Definition Scope ---
+        async function checkAndSelectProductType() {
+            try {
+                const ticketData = await client.data.get('ticket');
+                const productTypeFromTicket = ticketData.ticket.custom_fields.application;
+                if (productTypeFromTicket) {
+                    const checkbox = document.getElementById(`pt-${productTypeFromTicket}`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        client.interface.trigger("showNotify", { type: "info", message: `Product area '${productTypeFromTicket}' auto-selected.` });
+                    }
+                }
+            } catch (error) {
+                console.warn("Could not auto-select product type from ticket:", error);
+            }
         }
 
         // --- Event Listeners ---
-        chatForm.addEventListener('submit', (e) => onFormSubmit(e, client));
-        chatHistoryEl.addEventListener('click', (e) => onRatingClick(e, client));
+        chatForm.addEventListener('submit', onFormSubmit);
+        chatHistoryEl.addEventListener('click', onRatingClick);
+        useTicketContextCheckbox.addEventListener('change', async (event) => {
+            if (event.target.checked) {
+                await checkAndSelectProductType();
+            }
+        });
 
         // --- Initial Data Loading ---
-        loadProductTypes(client);
+        loadProductTypes();
+        if (useTicketContextCheckbox.checked) {
+            checkAndSelectProductType();
+        }
 
-
-        // --- Helper Functions ---
-
-        /**
-         * Renders a message in the chat history.
-         * @param {string} sender - 'user', 'assistant', or 'error'.
-         * @param {string|object} data - The message text or data object for the assistant.
-         */
+        // --- UI Helper Functions ---
         function renderMessage(sender, data) {
             const lastRatingContainer = chatHistoryEl.querySelector('.rating-buttons');
             if (lastRatingContainer) {
@@ -64,13 +74,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const ratingContainer = document.createElement('div');
                 ratingContainer.className = 'rating-buttons';
                 ratingContainer.innerHTML = `
-          <span class="rating-prompt">How helpful was this answer?</span>
-          <button class="smiley-btn rating-1" data-rating="1" title="Very poor"><i class="fas fa-sad-tear"></i></button>
-          <button class="smiley-btn rating-2" data-rating="2" title="Poor"><i class="fas fa-frown"></i></button>
-          <button class="smiley-btn rating-3" data-rating="3" title="Neutral"><i class="fas fa-meh"></i></button>
-          <button class="smiley-btn rating-4" data-rating="4" title="Good"><i class="fas fa-smile"></i></button>
-          <button class="smiley-btn rating-5" data-rating="5" title="Excellent"><i class="fas fa-laugh-beam"></i></button>
-        `;
+                  <span class="rating-prompt">How helpful was this answer?</span>
+                  <button class="smiley-btn rating-1" data-rating="1" title="Very poor"><i class="fas fa-sad-tear"></i></button>
+                  <button class="smiley-btn rating-2" data-rating="2" title="Poor"><i class="fas fa-frown"></i></button>
+                  <button class="smiley-btn rating-3" data-rating="3" title="Neutral"><i class="fas fa-meh"></i></button>
+                  <button class="smiley-btn rating-4" data-rating="4" title="Good"><i class="fas fa-smile"></i></button>
+                  <button class="smiley-btn rating-5" data-rating="5" title="Excellent"><i class="fas fa-laugh-beam"></i></button>
+                `;
                 div.appendChild(ratingContainer);
             } else {
                 div.textContent = data;
@@ -80,7 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
             chatHistoryEl.scrollTop = 0;
         }
 
-        /** Shows or hides the loading indicator. */
         function showLoading(isLoading) {
             if (sendButton) sendButton.disabled = isLoading;
             const loadingDiv = document.getElementById('loading');
@@ -96,74 +105,54 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        /** Safely parses a JSON response string. */
         function safeParseResponse(resp) {
             try {
                 if (!resp) return null;
                 if (resp.response && typeof resp.response === 'string') return JSON.parse(resp.response);
                 if (typeof resp === 'string') return JSON.parse(resp);
                 return resp;
-            } catch {
-                return null;
-            }
+            } catch { return null; }
         }
 
-        /** Parses an error object to get a user-friendly message. (Reduced Complexity) */
         function getErrorMessage(error) {
             if (!error) return "An unknown error occurred.";
             if (error.response) {
                 try {
                     const parsed = JSON.parse(error.response);
                     return parsed?.detail || error.message || "An unknown error occurred.";
-                } catch {
-                    // Response was not valid JSON
-                }
+                } catch { /* Not valid JSON */ }
             }
             return error.message || JSON.stringify(error);
         }
 
-        // --- Data Fetching Functions (Refactored for lower complexity) ---
-
-        /** Formats conversations into a string for the LLM. */
-// NEUE, VERBESSERTE VERSION
         function formatConversations(conversations) {
             const header = "Current Ticket Conversation:\n---\n";
-
             const formattedParts = conversations.map(convo => {
                 const author = convo.private ? "Support Agent (Internal Note):" : (convo.incoming ? "Customer:" : "Support Agent:");
                 const body = convo.body_text ? convo.body_text.trim() : 'No content';
                 return `${author}\n${body}\n---`;
             });
-
             return header + formattedParts.join('\n');
         }
 
-        /** Fetches the simple ticket context as a fallback. */
-        async function getSimpleTicketContext(client) {
+        // --- Data Fetching Functions ---
+        async function getSimpleTicketContext() {
             try {
                 const data = await client.data.get('ticket');
-                const subject = data.ticket.subject || '';
-                const desc = data.ticket.description_text || '';
-                return `Ticket Context:\nSubject: ${subject}\nDescription: ${desc}\n---`;
-            } catch {
-                return '';
-            }
+                return `Ticket Context:\nSubject: ${data.ticket.subject || ''}\nDescription: ${data.ticket.description_text || ''}\n---`;
+            } catch { return ''; }
         }
 
-        /** Fetches the full ticket conversation history. (Reduced Complexity) */
-        async function fetchTicketContext(client) {
+        async function fetchTicketContext() {
             try {
                 const ticketData = await client.data.get('ticket');
-                if (!ticketData?.ticket?.id) {
-                    console.warn('Ticket ID not available.');
-                    return '';
-                }
+                if (!ticketData?.ticket?.id) return '';
 
                 const conversationData = await client.request.invokeTemplate("getTicketConversations", {
                     context: { ticket_id: ticketData.ticket.id }
                 });
-                const conversations = safeParseResponse(conversationData);
 
+                const conversations = safeParseResponse(conversationData);
                 if (conversations && conversations.length > 0) {
                     return formatConversations(conversations);
                 }
@@ -171,49 +160,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 return `Ticket Context:\nSubject: ${ticketData.ticket.subject}\nDescription: ${ticketData.ticket.description_text || ''}\n---`;
             } catch (error) {
                 console.error('Failed to fetch full ticket context, using fallback:', error);
-                return await getSimpleTicketContext(client);
+                return await getSimpleTicketContext();
             }
         }
 
-        /** Loads and renders the available product types. */
-        async function loadProductTypes(client) {
+        async function loadProductTypes() {
             try {
-                const resp = await client.request.invokeTemplate("getProductTypes", {});
-                const productArray = safeParseResponse(resp) || [];
+                const data = await client.request.invokeTemplate("getProductTypes", {});
+                const productArray = safeParseResponse(data) || [];
 
                 productTypesContainer.innerHTML = '';
                 productArray.forEach(pt => {
                     const div = document.createElement('div');
                     div.className = 'product-item';
-
-                    const input = document.createElement('input');
-                    input.type = 'checkbox';
-                    input.id = `pt-${pt}`;
-                    input.value = pt;
-
-                    const label = document.createElement('label');
-                    label.htmlFor = `pt-${pt}`;
-                    label.textContent = pt;
-
-                    div.appendChild(input);
-                    div.appendChild(label);
+                    div.innerHTML = `<input type="checkbox" id="pt-${pt}" value="${pt}"><label for="pt-${pt}">${pt}</label>`;
                     productTypesContainer.appendChild(div);
                 });
+
+                // After loading, check if we need to auto-select
+                if (useTicketContextCheckbox.checked) {
+                    await checkAndSelectProductType();
+                }
+
             } catch (error) {
                 console.error("Failed to load product types:", error);
-                productTypesContainer.innerHTML = '<p class="error-text">Could not load product areas.</p>';
+                productTypesContainer.innerHTML = `<p class="error-text">Could not load product areas.</p>`;
             }
         }
 
-        /** Sends a query to the backend service. */
-        async function queryBackend(client, payload) {
+        async function queryBackend(payload) {
             const options = { body: JSON.stringify(payload) };
             const resp = await client.request.invokeTemplate("postQuery", options);
             return safeParseResponse(resp);
         }
 
-        /** Submits a rating for a conversation. */
-        async function submitRating(client, conversationId, sourceTicketIds, rating) {
+        async function submitRating(conversationId, sourceTicketIds, rating) {
             try {
                 const payload = { conversation_id: conversationId, source_ticket_ids: sourceTicketIds, rating: rating };
                 await client.request.invokeTemplate("postRating", { body: JSON.stringify(payload) });
@@ -225,9 +206,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // --- Main Event Handlers ---
-
-        /** Handles the submission of the chat form. */
-        async function onFormSubmit(event, client) {
+        async function onFormSubmit(event) {
             event.preventDefault();
             const userQuery = userInputEl.value.trim();
             if (!userQuery) return;
@@ -237,7 +216,7 @@ document.addEventListener('DOMContentLoaded', () => {
             showLoading(true);
 
             try {
-                const context = useTicketContextCheckbox.checked ? await fetchTicketContext(client) : '';
+                const context = useTicketContextCheckbox.checked ? await fetchTicketContext() : '';
                 const selectedProductTypes = Array.from(productTypesContainer.querySelectorAll('input:checked')).map(cb => cb.value);
 
                 const payload = {
@@ -246,7 +225,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     product_types_to_search: selectedProductTypes,
                     ticket_conversation_context: context
                 };
-                const responseData = await queryBackend(client, payload);
+                const responseData = await queryBackend(payload);
 
                 if (responseData && responseData.answer) {
                     renderMessage('assistant', responseData);
@@ -262,8 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        /** Handles clicks on the rating smileys. */
-        function onRatingClick(event, client) {
+        function onRatingClick(event) {
             const target = event.target.closest('.smiley-btn');
             if (!target) return;
 
@@ -275,10 +253,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const { conversationId, sourceTicketIds } = messageDiv.dataset;
 
             if (conversationId && sourceTicketIds) {
-                submitRating(client, conversationId, JSON.parse(sourceTicketIds), rating);
-
+                submitRating(conversationId, JSON.parse(sourceTicketIds), rating);
                 buttonsContainer.classList.add('disabled');
-                target.classList.add('selected');
+                target.classList.add('selected'); // Make the selected smiley stand out
                 const feedbackText = document.createElement('span');
                 feedbackText.className = 'rating-feedback';
                 feedbackText.textContent = 'Thanks!';
@@ -286,7 +263,5 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-
-    // Start the modal application
     initModal();
 });

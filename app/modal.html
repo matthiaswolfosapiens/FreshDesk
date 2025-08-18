@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>AI Assistant Modal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://static.freshdev.io/fdk/2.0/assets/freshworks.css">
+    <link rel="stylesheet" href="styles/style.css">
+    <script src="{{{appclient}}}"></script>
+</head>
+<body>
+<div class="fw-widget-wrapper">
+    <div class="chat-container">
+        <div id="chat-history" class="chat-history">
+        </div>
+
+        <div class="product-selection-area">
+            <h4>Select Product Areas</h4>
+            <div id="product-types-container">
+                <p class="loading-text">Loading product areas...</p>
+            </div>
+        </div>
+        <div class="chat-form-container">
+            <div class="context-toggle">
+                <input type="checkbox" id="use-ticket-context" name="use-ticket-context" checked>
+                <label for="use-ticket-context">  Use current ticket as context</label>
+            </div>
+            <form id="chat-form" class="chat-form">
+                <textarea id="user-input" placeholder="Ask a question..." required></textarea>
+                <button type="submit" id="send-button">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="modal.js"></script>
+</body>
+</html>

@@ -9,10 +9,27 @@
   },
   "api_key": {
     "display_name": "Backend API Key",
-    "description": "The API key for your chatbot backend service.",
+    "description": "The API key for your chatbot backend service. Use osapiens123",
     "type": "text",
     "secure": true,
     "required": false,
+    "modules": ["common", "support_ticket"]
+  },
+  "freshdesk_api_key": {
+    "display_name": "Freshdesk API Key",
+    "description": "Your personal Freshdesk API Key for API requests. (Use IWOzIzCBTDJ4GBNSo6g1)",
+    "default_value": "IWOzIzCBTDJ4GBNSo6g1",
+    "type": "text",
+    "secure": true,
+    "required": true,
+    "modules": ["common", "support_ticket"]
+  },
+  "freshdesk_domain": {
+    "display_name": "Freshdesk Domain",
+    "description": "Your Freshdesk domain (e.g., osapiens-desk.freshdesk.com)",
+    "type": "text",
+    "default_value": "osapiens-desk.freshdesk.com",
+    "required": true,
     "modules": ["common", "support_ticket"]
   }
 }

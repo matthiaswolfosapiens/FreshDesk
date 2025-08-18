@@ -21,5 +21,28 @@
         "Content-Type": "application/json"
       }
     }
+  },
+  "postRating": {
+    "schema": {
+      "protocol": "http",
+      "method": "POST",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/rate",
+      "headers": {
+        "Authorization": "Bearer osapiens123",
+        "Content-Type": "application/json"
+      }
+    }
+  },
+  "getTicketConversations": {
+    "schema": {
+      "method": "GET",
+      "host": "<%= iparam.freshdesk_domain %>",
+      "path": "/api/v2/tickets/<%= context.ticket_id %>/conversations",
+      "headers": {
+        "Authorization": "<%= encode(iparam.freshdesk_api_key) %>",
+        "Content-Type": "application/json"
+      }
+    }
   }
 }

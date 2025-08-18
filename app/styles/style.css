@@ -1,171 +1,215 @@
-/* General Body & Layout */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+/* General App Styling */
+body, html {
   margin: 0;
   padding: 0;
-  font-size: 14px;
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  background-color: #f8f9fa;
 }
 
+.fw-widget-wrapper {
+  padding: 15px;
+}
+
+/* 1. Chat Container & History */
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  background-color: #f9f9f9;
+  height: calc(100vh - 30px); /* Full height minus padding */
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  overflow: hidden;
 }
 
-.header {
-  padding: 10px 15px;
-  background-color: #f1f1f1;
-  border-bottom: 1px solid #ddd;
-  text-align: center;
-}
-
-h3, h4 {
-  margin: 0;
-  color: #333;
-}
-
-/* Chat History */
 .chat-history {
   flex-grow: 1;
-  overflow-y: auto;
   padding: 15px;
+  overflow-y: auto;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  /* 3. Newest Message on Top */
+  flex-direction: column-reverse; /* This flips the chat order */
 }
 
 .message {
   padding: 10px 15px;
   border-radius: 18px;
-  max-width: 80%;
+  margin-bottom: 10px;
+  max-width: 85%;
   line-height: 1.4;
-  word-wrap: break-word;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeIn 0.3s forwards;
+}
+
+@keyframes fadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .user-message {
-  align-self: flex-end;
   background-color: #007bff;
   color: white;
+  align-self: flex-end;
   border-bottom-right-radius: 4px;
 }
 
 .assistant-message {
-  align-self: flex-start;
   background-color: #e9ecef;
-  color: #333;
+  color: #212529;
+  align-self: flex-start;
   border-bottom-left-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .error-message {
-  align-self: center;
   background-color: #f8d7da;
   color: #721c24;
-  border: 1px solid #f5c6cb;
-  border-radius: 8px;
-  font-size: 12px;
-}
-
-.loading-indicator, .loading-text {
-  align-self: flex-start;
-  color: #888;
-  font-style: italic;
+  align-self: center;
   width: 100%;
   text-align: center;
 }
 
-/* === NEUE STILE START === */
+/* 2. Product Selection Area */
 .product-selection-area {
-  padding: 10px 15px;
-  border-top: 1px solid #ddd;
-  background-color: #fff;
+  padding: 15px;
+  border-top: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
 }
 
 .product-selection-area h4 {
-  margin-bottom: 8px;
+  margin-top: 0;
+  margin-bottom: 10px;
   font-size: 14px;
+  color: #343a40;
 }
 
+/* 4. Grid Layout for Product Areas */
 #product-types-container {
-  max-height: 120px;
-  overflow-y: auto;
-  border: 1px solid #eee;
-  padding: 8px;
-  border-radius: 4px;
-  background-color: #fdfdfd;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
 }
 
-.product-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 5px;
+.product-item input[type="checkbox"] {
+  display: none; /* Hide the original checkbox */
 }
 
 .product-item label {
-  margin-left: 8px;
+  display: block;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  cursor: pointer;
+  text-align: center;
   font-size: 13px;
-  color: #333;
-}
-/* === NEUE STILE ENDE === */
-
-
-/* Form & Input */
-.chat-form-container {
-  padding: 10px 15px;
-  border-top: 1px solid #ddd;
+  transition: all 0.2s ease-in-out;
   background-color: #fff;
 }
 
-.context-toggle {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  font-size: 12px;
+.product-item input[type="checkbox"]:checked + label {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+  font-weight: bold;
 }
-.context-toggle label {
-  margin-left: 5px;
-  color: #555;
+
+.product-item label:hover {
+  border-color: #007bff;
+}
+
+/* 3. Chat Form & Input Area */
+.chat-form-container {
+  padding: 15px;
+  background-color: #f8f9fa;
 }
 
 .chat-form {
   display: flex;
-  align-items: center;
   gap: 10px;
 }
 
 #user-input {
   flex-grow: 1;
-  border: 1px solid #ccc;
-  border-radius: 15px;
-  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 20px;
+  padding: 10px 15px;
   resize: none;
-  height: 38px;
-  font-family: inherit;
   font-size: 14px;
+  height: 40px;
+  box-sizing: border-box;
 }
 
 #send-button {
-  border: none;
   background-color: #007bff;
   color: white;
-  width: 38px;
-  height: 38px;
+  border: none;
   border-radius: 50%;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  transition: background-color 0.2s;
 }
 
 #send-button:hover {
   background-color: #0056b3;
 }
 
-#send-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
+/* 5. UI Polish: Context Toggle Switch */
+.context-toggle {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.context-toggle label {
+  font-size: 13px;
+  color: #495057;
+}
+/* Hiding the default checkbox is part of the custom toggle design */
+.context-toggle input[type="checkbox"] {
+  /* This would be a good place for a more advanced toggle switch style if needed */
+}
+
+.rating-buttons {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #dee2e6;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
+.rating-prompt { font-size: 12px; color: #6c757d; margin-right: auto; }
+.smiley-btn {
+  background: none; border: none; cursor: pointer; color: #adb5bd;
+  font-size: 20px; padding: 5px; border-radius: 50%;
+  transition: all 0.2s ease-in-out;
+}
+.rating-buttons:not(.disabled) .smiley-btn.rating-1:hover { color: #dc3545; transform: scale(1.2); }
+.rating-buttons:not(.disabled) .smiley-btn.rating-2:hover { color: #fd7e14; transform: scale(1.2); }
+.rating-buttons:not(.disabled) .smiley-btn.rating-3:hover { color: #ffc107; transform: scale(1.2); }
+.rating-buttons:not(.disabled) .smiley-btn.rating-4:hover { color: #20c997; transform: scale(1.2); }
+.rating-buttons:not(.disabled) .smiley-btn.rating-5:hover { color: #28a745; transform: scale(1.2); }
+.rating-buttons.disabled { pointer-events: none; }
+.rating-buttons.disabled .smiley-btn:not(.selected) { opacity: 0.3; }
+.smiley-btn.selected.rating-1 { color: #dc3545; }
+.smiley-btn.selected.rating-2 { color: #fd7e14; }
+.smiley-btn.selected.rating-3 { color: #ffc107; }
+.smiley-btn.selected.rating-4 { color: #20c997; }
+.smiley-btn.selected.rating-5 { color: #28a745; }
+.rating-feedback {
+  font-size: 13px;
+  color: #28a745;
+  font-weight: bold;
+  margin-left: 10px;
+  white-space: nowrap;
 }

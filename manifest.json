@@ -9,7 +9,9 @@
     "common": {
       "requests": {
         "getProductTypes": {},
-        "postQuery": {}
+        "postQuery": {},
+        "postRating": {},
+        "getTicketConversations": {}
       }
     },
     "support_ticket": {

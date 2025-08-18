@@ -2,36 +2,26 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>AI Assistant</title>
+  <title>AI Assistant Launcher</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-  <link rel="stylesheet" href="styles/style.css">
+  <link rel="stylesheet" href="https://static.freshdev.io/fdk/2.0/assets/freshworks.css">
   <script src="{{{appclient}}}"></script>
+  <style>
+    .launcher-content { text-align: center; padding: 20px 10px; color: #6c757d; }
+    .launcher-icon { font-size: 48px; color: #007bff; margin-bottom: 15px; }
+  </style>
 </head>
 <body>
-<div class="chat-container">
-  <div class="header">
-    <h3>AI Assistant</h3>
-  </div>
-  <div id="chat-history" class="chat-history">
-  </div>
-
-  <div class="product-selection-area">
-    <h4>Select Product Areas</h4>
-    <div id="product-types-container">
-      <p class="loading-text">Loading product areas...</p>
+<div class="fw-widget-wrapper">
+  <div class="launcher-content">
+    <div class="launcher-icon">
+      <i class="fas fa-brain"></i>
     </div>
-  </div>
-  <div class="chat-form-container">
-    <div class="context-toggle">
-      <input type="checkbox" id="use-ticket-context" name="use-ticket-context" checked>
-      <label for="use-ticket-context">Use current ticket as context</label>
-    </div>
-    <form id="chat-form" class="chat-form">
-      <textarea id="user-input" placeholder="Ask a question..." required></textarea>
-      <button type="submit" id="send-button">
-        <i class="fas fa-paper-plane"></i>
-      </button>
-    </form>
+    <h4>AI Assistant</h4>
+    <p>Click to ask questions and get context-aware answers.</p>
+    <button class="fw-button fw-button--primary" id="open-modal-btn">
+      Open Assistant
+    </button>
   </div>
 </div>
 <script src="app.js"></script>

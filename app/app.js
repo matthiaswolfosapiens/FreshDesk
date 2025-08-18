@@ -33,25 +33,18 @@ document.addEventListener('DOMContentLoaded', () => {
   function safeParseResponse(resp) {
     try {
       if (!resp) return null;
+      // The response from invokeTemplate is often in resp.response
+      if (resp.response && typeof resp.response === 'string') {
+        return JSON.parse(resp.response);
+      }
       if (typeof resp === 'string') return JSON.parse(resp);
-      if (resp.response && typeof resp.response === 'string') return JSON.parse(resp.response);
       return resp;
     } catch {
       return null;
     }
   }
 
-  // This function does not use await inside, so no need to be async
-  async function invokeRequest(client, method, url, headers = {}, body = null) {
-    const options = {
-      url,
-      method,
-      headers
-    };
-    if (body) options.body = body;
-
-    return await client.request.invoke(options);
-  }
+  // The generic invokeRequest function is no longer needed.
 
   async function fetchTicketContext(client) {
     try {
@@ -67,48 +60,47 @@ document.addEventListener('DOMContentLoaded', () => {
     return '';
   }
 
-  async function loadProductTypes(client, backendUrl, apiKey) {
-    const url = `${backendUrl}/product-types`;
-    const headers = {
-      Authorization: `Bearer ${apiKey}`
-    };
-    const resp = await invokeRequest(client, 'GET', url, headers);
+  // Refactored to use the "getProductTypes" template from requests.json
+  async function loadProductTypes(client) {
+    console.log("entered loadProductTypes");
+
+    const resp = await client.request.invokeTemplate("getProductTypes", {});
+    console.log("Response from invokeTemplate:", resp);
+
     const parsed = safeParseResponse(resp) || [];
+    console.log("Parsed product types:", parsed);
     const productArray = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.productTypes) ? parsed.productTypes : []);
 
     productTypesContainer.innerHTML = '';
     productArray.forEach(pt => {
       const div = document.createElement('div');
       div.className = 'product-item';
-
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
       checkbox.id = `pt-${pt}`;
       checkbox.value = pt;
-
       const label = document.createElement('label');
       label.htmlFor = `pt-${pt}`;
       label.textContent = pt;
-
       div.appendChild(checkbox);
       div.appendChild(label);
       productTypesContainer.appendChild(div);
     });
   }
 
-  async function queryBackend(client, backendUrl, apiKey, payload) {
-    const url = `${backendUrl}/query`;
-    const headers = {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
+  // Refactored to use the "postQuery" template from requests.json
+  async function queryBackend(client, payload) {
+    const options = {
+      body: JSON.stringify(payload)
     };
-    const body = JSON.stringify(payload);
-    const resp = await invokeRequest(client, 'POST', url, headers, body);
+
+    const resp = await client.request.invokeTemplate("postQuery", options);
     const parsed = safeParseResponse(resp);
     return parsed?.answer || parsed?.data?.answer || 'No answer returned from backend';
   }
 
-  async function onFormSubmit(event, client, backendUrl, apiKey) {
+  // Refactored to remove the backendUrl parameter
+  async function onFormSubmit(event, client) {
     event.preventDefault();
 
     const userQuery = userInputEl.value.trim();
@@ -130,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         product_types_to_search: selectedProductTypes
       };
 
-      const answer = await queryBackend(client, backendUrl, apiKey, payload);
+      const answer = await queryBackend(client, payload);
       renderMessage('assistant', answer);
       chatHistory.push({ question: userQuery, answer });
     } catch (error) {
@@ -142,21 +134,35 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function initApp() {
-    const client = await app.initialized();
-    const params = await client.iparams.get();
-    const backendUrl = params.backend_url;
-    const apiKey = params.api_key;
-
-    if (!backendUrl) {
-      renderMessage('error', 'Backend URL is not configured in iparams.');
-      return;
-    }
-
     try {
-      await loadProductTypes(client, backendUrl, apiKey);
-      chatForm.addEventListener('submit', (e) => onFormSubmit(e, client, backendUrl, apiKey));
+      console.log('App initialization started...');
+      const client = await app.initialized();
+      console.log('Client object initialized successfully.');
+
+      console.log('Attempting to get iparams...');
+      const params = await client.iparams.get();
+      console.log('Successfully retrieved iparams:', params);
+
+      // We keep this check to ensure the app is configured, even though
+      // the URL is now used by the template in requests.json.
+      if (!params.backend_url) {
+        console.error('Backend URL is not configured in iparams.');
+        renderMessage('error', 'Backend URL is not configured in iparams.');
+        return;
+      }
+      console.log(`Configuration check passed. Backend URL is: ${params.backend_url}`);
+
+      console.log('Attempting to load product types...');
+      await loadProductTypes(client); // backendUrl no longer needed
+      console.log('Successfully loaded product types.');
+
+      // backendUrl no longer needed in the event listener
+      chatForm.addEventListener('submit', (e) => onFormSubmit(e, client));
+      console.log('Form submit event listener added successfully.');
+      console.log('App initialization complete!');
+
     } catch (error) {
-      console.error('Initialization failed:', error);
+      console.error('CRITICAL ERROR during initialization:', error);
       renderMessage('error', `Initialization failed: ${error.message || error}`);
     }
   }

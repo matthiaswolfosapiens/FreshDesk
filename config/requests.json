@@ -1,0 +1,25 @@
+{
+  "getProductTypes": {
+    "schema": {
+      "protocol": "http",
+      "method": "GET",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/product-types",
+      "headers": {
+        "Authorization": "Bearer osapiens123"
+      }
+    }
+  },
+  "postQuery": {
+    "schema": {
+      "protocol": "http",
+      "method": "POST",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/query",
+      "headers": {
+        "Authorization": "Bearer osapiens123",
+        "Content-Type": "application/json"
+      }
+    }
+  }
+}

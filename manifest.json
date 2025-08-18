@@ -1,7 +1,18 @@
 {
-  "platform-version": "2.3",
-  "product": {
-    "freshdesk": {
+  "platform-version": "3.0",
+  "features": {
+    "request": {},
+    "iparams": {},
+    "data": {}
+  },
+  "modules": {
+    "common": {
+      "requests": {
+        "getProductTypes": {},
+        "postQuery": {}
+      }
+    },
+    "support_ticket": {
       "location": {
         "ticket_sidebar": {
           "url": "index.html",
@@ -10,17 +21,8 @@
       }
     }
   },
-  "features": {
-    "request": {},
-    "data": {},
-    "iparams": {}
-  },
-  "outbound-domains": [
-    "localhost",
-    "api.osapiens.com"
-  ],
   "engines": {
-    "node": "18.20.8",
+    "node": "18.18.2",
     "fdk": "9.6.0"
   }
 }

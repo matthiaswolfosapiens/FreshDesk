@@ -1,16 +1,18 @@
 {
   "backend_url": {
     "display_name": "Chatbot Backend URL",
-    "description": "For local development, enter: http://localhost:8501",
+    "description": "For local development, enter: localhost:8000 (without http://)",
     "type": "text",
     "required": true,
-    "default_value": "http://localhost:8000"
+    "default_value": "localhost:8000",
+    "modules": ["common", "support_ticket"]
   },
   "api_key": {
     "display_name": "Backend API Key",
     "description": "The API key for your chatbot backend service.",
     "type": "text",
     "secure": true,
-    "required": false
+    "required": false,
+    "modules": ["common", "support_ticket"]
   }
 }

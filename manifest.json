@@ -1,5 +1,8 @@
 {
   "platform-version": "3.0",
+  "domains": {
+    "backend.local": "<%= iparam.backend_url %>"
+  },
   "features": {
     "request": {},
     "iparams": {},

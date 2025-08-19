@@ -5,19 +5,15 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a02ac437-7bd9-4fca-a43a-6bca63bfb189" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/jest.config.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/frontend/app.test.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/frontend/modal.test.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/utils.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/frontend/helper.test.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/modal.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/modal.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/modal.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/modal.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/reply_helper.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/reply_helper.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/reply_helper.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/reply_helper.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/config/requests.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/requests.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/frontend/modal.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/frontend/modal.test.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/frontend/reply_helper.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/frontend/reply_helper.test.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,18 +32,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "matthiaswolfosapiens"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;matthiaswolfosapiens&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/matthiaswolfosapiens/FreshDesk.git",
-    "accountId": "4e7e5c09-ccd2-4e1b-b5f9-daf2527f1561"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/matthiaswolfosapiens/FreshDesk.git&quot;,
+    &quot;accountId&quot;: &quot;4e7e5c09-ccd2-4e1b-b5f9-daf2527f1561&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 1
 }</component>
@@ -61,7 +57,7 @@
     "DefaultHtmlFileTemplate": "HTML File",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "master",
+    "git-widget-placeholder": "05674344",
     "last_opened_file_path": "/Users/matthiaswolf/WebstormProjects/FreshWorks",
     "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",

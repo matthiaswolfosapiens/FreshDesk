@@ -1,4 +1,5 @@
 // app/reply_helper.js
+const { safeParseResponse, getErrorMessage, formatConversations } = require('./utils.js');
 
 async function initReplyHelper() {
     // --- Core App Initialization ---
@@ -46,45 +47,6 @@ async function initReplyHelper() {
         if (views[viewName]) {
             views[viewName].classList.remove('hidden');
         }
-    }
-
-    /** Safely parses a JSON response string. */
-    function safeParseResponse(resp) {
-        try {
-            if (!resp) return null;
-            if (resp.response && typeof resp.response === 'string') {
-                return JSON.parse(resp.response);
-            }
-            if (typeof resp === 'string') return JSON.parse(resp);
-            return resp;
-        } catch (e) {
-            console.error("Failed to parse response:", e, resp);
-            return null;
-        }
-    }
-
-
-    /** Parses an error object to get a user-friendly message. */
-    function getErrorMessage(error) {
-        if (!error) return "An unknown error occurred.";
-        if (error.response) {
-            try {
-                const parsed = JSON.parse(error.response);
-                return parsed?.detail || error.message || "An unknown error occurred.";
-            } catch { /* Response was not valid JSON */ }
-        }
-        return error.message || JSON.stringify(error);
-    }
-
-    /** Formats an array of conversation objects into a single string. */
-    function formatConversations(conversations) {
-        const header = "Current Ticket Conversation:\n---\n";
-        const formattedParts = conversations.map(convo => {
-            const author = convo.private ? "Support Agent (Internal Note):" : (convo.incoming ? "Customer:" : "Support Agent:");
-            const body = convo.body_text ? convo.body_text.trim() : 'No content';
-            return `${author}\n${body}\n---`;
-        });
-        return header + formattedParts.join('\n');
     }
 
     async function getTicketContextAndProductType() {
@@ -152,12 +114,9 @@ async function initReplyHelper() {
     // --- Event Listeners ---
     buttons.draftReply.addEventListener('click', handleDraftReply);
     buttons.summarize.addEventListener('click', handleSummarize);
-
-    // Back buttons
     buttons.draftBack.addEventListener('click', () => showView('initial'));
     buttons.summaryBack.addEventListener('click', () => showView('initial'));
 
-    // Draft action buttons
     buttons.accept.addEventListener('click', async () => {
         try {
             const draftToInsert = buttons.accept.dataset.draft || '';
@@ -176,11 +135,13 @@ async function initReplyHelper() {
     });
 
     buttons.regenerate.addEventListener('click', handleDraftReply);
-
     buttons.close.addEventListener('click', () => showView('initial'));
-
-    // --- Initial State ---
     showView('initial');
 }
 
 initReplyHelper();
+
+// NEU: Exportieren für Tests
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { safeParseResponse, getErrorMessage, formatConversations };
+}

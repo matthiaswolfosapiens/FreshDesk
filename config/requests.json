@@ -3,7 +3,7 @@
     "schema": {
       "protocol": "https",
       "method": "GET",
-      "host": "<%= iparam.backend_url %>",
+      "host": "backend.local",
       "path": "/product-types",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>"
@@ -14,7 +14,7 @@
     "schema": {
       "protocol": "https",
       "method": "POST",
-      "host": "<%= iparam.backend_url %>",
+      "host": "backend.local",
       "path": "/query",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>",
@@ -26,7 +26,7 @@
     "schema": {
       "protocol": "https",
       "method": "POST",
-      "host": "<%= iparam.backend_url %>",
+      "host": "backend.local",
       "path": "/rate",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>",
@@ -38,7 +38,7 @@
     "schema": {
       "protocol": "https",
       "method": "POST",
-      "host": "<%= iparam.backend_url %>",
+      "host": "backend.local",
       "path": "/draft-reply",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>",
@@ -50,7 +50,7 @@
     "schema": {
       "protocol": "https",
       "method": "POST",
-      "host": "<%= iparam.backend_url %>",
+      "host": "backend.local",
       "path": "/summarize",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>",

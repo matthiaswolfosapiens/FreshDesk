@@ -1,12 +1,16 @@
 {
-  "name": "AI-Tool for Osapiens",
+  "name": "freshworks",
   "version": "1.0.0",
   "description": "This app displays the name of the requester of a freshdesk ticket in the ticket_sidebar placeholder",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage"
   },
   "keywords": [],
-  "author": "Customer Delivery Team",
-  "license": "ISC"
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5"
+  }
 }

@@ -3,7 +3,6 @@
  * This script contains all the logic for the AI Assistant chat interface
  * that runs inside the modal window.
  */
-document.addEventListener('DOMContentLoaded', () => {
     async function initModal() {
         const chatHistoryEl = document.getElementById('chat-history');
         const chatForm = document.getElementById('chat-form');
@@ -264,4 +263,3 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     initModal();
-});

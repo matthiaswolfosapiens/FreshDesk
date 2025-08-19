@@ -1,7 +1,7 @@
 {
   "getProductTypes": {
     "schema": {
-      "protocol": "http",
+      "protocol": "https",
       "method": "GET",
       "host": "<%= iparam.backend_url %>",
       "path": "/product-types",
@@ -12,7 +12,7 @@
   },
   "postQuery": {
     "schema": {
-      "protocol": "http",
+      "protocol": "https",
       "method": "POST",
       "host": "<%= iparam.backend_url %>",
       "path": "/query",
@@ -24,7 +24,7 @@
   },
   "postRating": {
     "schema": {
-      "protocol": "http",
+      "protocol": "https",
       "method": "POST",
       "host": "<%= iparam.backend_url %>",
       "path": "/rate",
@@ -36,7 +36,7 @@
   },
   "postDraftReply": {
     "schema": {
-      "protocol": "http",
+      "protocol": "https",
       "method": "POST",
       "host": "<%= iparam.backend_url %>",
       "path": "/draft-reply",
@@ -48,7 +48,7 @@
   },
   "postSummarize": {
     "schema": {
-      "protocol": "http",
+      "protocol": "https",
       "method": "POST",
       "host": "<%= iparam.backend_url %>",
       "path": "/summarize",

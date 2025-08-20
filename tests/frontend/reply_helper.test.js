@@ -5,7 +5,7 @@ const path = require('path');
 const { mockClient } = require('./mocks');
 
 describe('Reply Helper Logic', () => {
-    let consoleErrorSpy;
+    let consoleErrorSpy, consoleLogSpy;
 
     beforeEach(() => {
         jest.resetModules();
@@ -14,7 +14,6 @@ describe('Reply Helper Logic', () => {
         jest.clearAllMocks();
 
         global.app.initialized.mockResolvedValue(mockClient);
-        // Default happy path mocks
         mockClient.request.invokeTemplate.mockImplementation(async (templateName, options) => {
             if (templateName === 'getTicketConversations') {
                 return { response: JSON.stringify([{ body_text: 'conversation context' }]) };
@@ -28,14 +27,16 @@ describe('Reply Helper Logic', () => {
             return { response: '{}' };
         });
         mockClient.data.get.mockResolvedValue({
-            ticket: { id: 123, custom_fields: { application: 'ProductA' } }
+            ticket: { id: 123, description_text: 'A description.', custom_fields: { application: 'ProductA' } }
         });
 
         consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     });
 
     afterEach(() => {
         consoleErrorSpy.mockRestore();
+        consoleLogSpy.mockRestore();
     });
 
     describe('Initialization', () => {
@@ -90,18 +91,27 @@ describe('Reply Helper Logic', () => {
 
         it('should show notification if getting ticket context fails', async () => {
             mockClient.data.get.mockRejectedValue(new Error('Ticket data missing'));
-
-            // Re-require to catch error during context fetch
             require('../../app/reply_helper.js');
             await new Promise(process.nextTick);
-
             document.getElementById('draft-reply-btn').click();
             await new Promise(process.nextTick);
-
             expect(mockClient.interface.trigger).toHaveBeenCalledWith("showNotify", {
                 type: "danger",
                 message: "Could not draft reply: Ticket data missing"
             });
+        });
+
+        it('should build context correctly when ticket has no description', async () => {
+            mockClient.data.get.mockResolvedValue({
+                ticket: { id: 123, description_text: null, custom_fields: { application: 'ProductA' } }
+            });
+            require('../../app/reply_helper.js');
+            document.getElementById('draft-reply-btn').click();
+            await new Promise(process.nextTick);
+            const postDraftCall = mockClient.request.invokeTemplate.mock.calls.find(call => call[0] === 'postDraftReply');
+            const payload = JSON.parse(postDraftCall[1].body);
+            expect(payload.ticket_conversation_context).not.toContain('Customer:');
+            expect(payload.ticket_conversation_context).toContain('Support Agent:');
         });
     });
 
@@ -114,8 +124,33 @@ describe('Reply Helper Logic', () => {
             document.getElementById('accept-btn').dataset.draft = 'Final draft';
             document.getElementById('accept-btn').click();
             await new Promise(process.nextTick);
-            expect(mockClient.interface.trigger).toHaveBeenCalledWith("setValue", { id: "editor", text: "Final draft" });
+            expect(mockClient.interface.trigger).toHaveBeenCalledWith("setValue", { id: "editor", text: "<p>Final draft</p>" });
             expect(mockClient.interface.trigger).toHaveBeenCalledWith("showNotify", { type: "success", message: "Draft inserted into reply." });
+        });
+
+        it('should pass through strings containing HTML-like tags without escaping', async () => {
+            const draftWithHtml = 'This is <b>bold</b>.';
+            document.getElementById('accept-btn').dataset.draft = draftWithHtml;
+            document.getElementById('accept-btn').click();
+            await new Promise(process.nextTick);
+            expect(mockClient.interface.trigger).toHaveBeenCalledWith("setValue", { id: "editor", text: draftWithHtml });
+        });
+
+        it('should correctly escape special characters in non-HTML draft', async () => {
+            const draftWithSpecialChars = '5 > 3 & "quote"';
+            document.getElementById('accept-btn').dataset.draft = draftWithSpecialChars;
+            document.getElementById('accept-btn').click();
+            await new Promise(process.nextTick);
+            const expectedHtml = '<p>5 &gt; 3 &amp; &quot;quote&quot;</p>';
+            expect(mockClient.interface.trigger).toHaveBeenCalledWith("setValue", { id: "editor", text: expectedHtml });
+        });
+
+        it('should handle empty paragraphs (double newlines) in draft', async () => {
+            document.getElementById('accept-btn').dataset.draft = 'Line 1\n\nLine 2';
+            document.getElementById('accept-btn').click();
+            await new Promise(process.nextTick);
+            const expectedHtml = '<p>Line 1</p><p>Line 2</p>';
+            expect(mockClient.interface.trigger).toHaveBeenCalledWith("setValue", { id: "editor", text: expectedHtml });
         });
 
         it('should show notification if inserting draft fails', async () => {
@@ -137,18 +172,13 @@ describe('Reply Helper Logic', () => {
             const discardBtn = document.getElementById('discard-btn');
             const closeBtn = document.getElementById('close-btn');
             const regenerateBtn = document.getElementById('regenerate-btn');
-
             discardBtn.click();
             expect(document.getElementById('draft-actions-initial').classList.contains('hidden')).toBe(true);
             expect(document.getElementById('draft-actions-discarded').classList.contains('hidden')).toBe(false);
-
-            // Should call handleDraftReply again
             mockClient.request.invokeTemplate.mockClear();
             regenerateBtn.click();
             await new Promise(process.nextTick);
             expect(mockClient.request.invokeTemplate).toHaveBeenCalledWith("postDraftReply", expect.any(Object));
-
-            // Go back to discarded view to test the close button
             discardBtn.click();
             closeBtn.click();
             expect(document.getElementById('initial-view').classList.contains('hidden')).toBe(false);
@@ -157,8 +187,6 @@ describe('Reply Helper Logic', () => {
         it('should navigate back from draft and summary views', () => {
             document.getElementById('draft-back-btn').click();
             expect(document.getElementById('initial-view').classList.contains('hidden')).toBe(false);
-
-            // Helper function to quickly switch view for test
             function showView(viewName) {
                 document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
                 document.getElementById(`${viewName}-view`).classList.remove('hidden');
@@ -167,19 +195,70 @@ describe('Reply Helper Logic', () => {
             document.getElementById('summary-back-btn').click();
             expect(document.getElementById('initial-view').classList.contains('hidden')).toBe(false);
         });
+
+        it('should handle invalid response when drafting a reply', async () => {
+            mockClient.request.invokeTemplate.mockImplementation(async (templateName) => {
+                if (templateName === 'postDraftReply') {
+                    return { response: JSON.stringify({ not_the_draft: 'data' }) };
+                }
+                if (templateName === 'getTicketConversations') {
+                    return { response: JSON.stringify([{ body_text: 'context' }]) };
+                }
+            });
+            document.getElementById('draft-reply-btn').click();
+            await new Promise(process.nextTick);
+            expect(mockClient.interface.trigger).toHaveBeenCalledWith("showNotify", {
+                type: "danger",
+                message: "Could not draft reply: Invalid response from draft service."
+            });
+            expect(document.getElementById('initial-view').classList.contains('hidden')).toBe(false);
+        });
     });
 
     describe('Internal functions', () => {
-        // This is the safe way to test this behavior.
         it('should do nothing when showing a non-existent view', async () => {
             require('../../app/reply_helper.js');
             await new Promise(process.nextTick);
-
             const backButton = document.getElementById('draft-back-btn');
-
-            // Manually remove a view to test the 'if (views[viewName])' check
             document.getElementById('initial-view').remove();
             expect(() => backButton.click()).not.toThrow();
+        });
+    });
+
+    describe('Helper function edge cases', () => {
+        beforeEach(() => {
+            require('../../app/reply_helper.js');
+        });
+
+        it('should handle various error response formats in getErrorMessage', async () => {
+            mockClient.data.get.mockRejectedValue({ response: '{"detail":"Specific detail from API."}' });
+            document.getElementById('draft-reply-btn').click();
+            await new Promise(process.nextTick);
+            expect(mockClient.interface.trigger).toHaveBeenCalledWith("showNotify", { type: "danger", message: "Could not draft reply: Specific detail from API." });
+
+            mockClient.data.get.mockRejectedValue({ message: "Fallback message", response: '{"other_key":"value"}' });
+            document.getElementById('draft-reply-btn').click();
+            await new Promise(process.nextTick);
+            expect(mockClient.interface.trigger).toHaveBeenCalledWith("showNotify", { type: "danger", message: "Could not draft reply: Fallback message" });
+        });
+
+        it('should format different conversation author types correctly', async () => {
+            const conversations = [
+                { private: false, incoming: true, body_text: 'Customer says hello.' },
+                { private: true, incoming: false, body_text: 'This is an internal note.' },
+                { body_text: null }
+            ];
+            mockClient.request.invokeTemplate.mockResolvedValue({ response: JSON.stringify(conversations) });
+
+            document.getElementById('summarize-btn').click();
+            await new Promise(process.nextTick);
+
+            const summarizeCall = mockClient.request.invokeTemplate.mock.calls.find(call => call[0] === 'postSummarize');
+            const payload = JSON.parse(summarizeCall[1].body);
+
+            expect(payload.ticket_conversation_context).toContain('Customer:\nCustomer says hello.');
+            expect(payload.ticket_conversation_context).toContain('Support Agent (Internal Note):\nThis is an internal note.');
+            expect(payload.ticket_conversation_context).toContain('Support Agent:\nNo content');
         });
     });
 });

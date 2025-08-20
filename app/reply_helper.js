@@ -1,5 +1,34 @@
-// app/reply_helper.js
-const { safeParseResponse, getErrorMessage, formatConversations } = require('./utils.js');
+// reply_helper.js
+
+function safeParseResponse(resp) {
+    try {
+        if (!resp) return null;
+        if (resp.response && typeof resp.response === 'string') return JSON.parse(resp.response);
+        if (typeof resp === 'string') return JSON.parse(resp);
+        return resp;
+    } catch { return null; }
+}
+
+function getErrorMessage(error) {
+    if (!error) return "An unknown error occurred.";
+    if (error.response) {
+        try {
+            const parsed = JSON.parse(error.response);
+            return parsed?.detail || error.message || "An unknown error occurred.";
+        } catch { /* Not valid JSON */ }
+    }
+    return error.message || JSON.stringify(error);
+}
+
+function formatConversations(conversations) {
+    const header = "Current Ticket Conversation:\n---\n";
+    const formattedParts = conversations.map(convo => {
+        const author = convo.private ? "Support Agent (Internal Note):" : (convo.incoming ? "Customer:" : "Support Agent:");
+        const body = convo.body_text ? convo.body_text.trim() : 'No content';
+        return `${author}\n${body}\n---`;
+    });
+    return header + formattedParts.join('\n');
+}
 
 async function initReplyHelper() {
     // --- Core App Initialization ---
@@ -50,18 +79,46 @@ async function initReplyHelper() {
     }
 
     async function getTicketContextAndProductType() {
+        console.log('getTicketContextAndProductType');
+
         const ticketData = await client.data.get('ticket');
-        const productType = ticketData.ticket.custom_fields.application;
+        console.log("loading ticket data: ", ticketData);
+        const productType = ticketData?.ticket?.custom_fields?.cf_track_and_trace;
+        console.log("product type: ", productType);
+        console.log("ticket id : ", ticketData?.ticket?.id);
 
         const conversationData = await client.request.invokeTemplate("getTicketConversations", {
-            context: { ticket_id: ticketData.ticket.id }
+            context: { ticket_id: ticketData?.ticket?.id }
         });
+        console.log("conversationData: ", conversationData);
+        const conversations = safeParseResponse(conversationData) || [];
 
-        const conversations = safeParseResponse(conversationData);
-        const context = (conversations && conversations.length > 0) ? formatConversations(conversations) : '';
+        const contextParts = [];
+
+        if (ticketData?.ticket?.description_text) {
+            const body = ticketData.ticket.description_text.trim();
+            if (body) {
+                contextParts.push(`Customer:\n${body}\n---`);
+            }
+        }
+
+        if (conversations.length > 0) {
+            conversations.forEach(convo => {
+                const author = convo.private ? "Support Agent (Internal Note):" : (convo.incoming ? "Customer:" : "Support Agent:");
+                const body = convo.body_text ? convo.body_text.trim() : 'No content';
+                contextParts.push(`${author}\n${body}\n---`);
+            });
+        }
+
+        let context = '';
+        if (contextParts.length > 0) {
+            context = "Current Ticket Conversation:\n---\n" + contextParts.join('\n');
+        }
+
+        console.log("Constructed Context:", context);
+
         return { context, productType };
     }
-
     // --- Main Logic Functions ---
     async function handleDraftReply() {
         content.loadingText.textContent = 'Drafting reply...';
@@ -69,10 +126,17 @@ async function initReplyHelper() {
         try {
             const { context, productType } = await getTicketContextAndProductType();
             const payload = { ticket_conversation_context: context, product_type: productType };
+            console.log("handle Draft Reply payload: ", payload);
 
-            const responseData = await client.request.invokeTemplate("postDraftReply", { body: JSON.stringify(payload) });
+            const options = {
+                body: JSON.stringify(payload),
+                timeout: 60000
+            };
+            const responseData = await client.request.invokeTemplate("postDraftReply", options);
+
+            console.log("handle DraftReply response Data: ", responseData);
             const response = safeParseResponse(responseData);
-
+            console.log("handle DraftReply response: ", response);
             if (response && response.draft) {
                 content.draftText.textContent = response.draft;
                 buttons.accept.dataset.draft = response.draft;
@@ -95,10 +159,17 @@ async function initReplyHelper() {
         try {
             const { context } = await getTicketContextAndProductType();
             const payload = { ticket_conversation_context: context };
+            console.log("handle Summarize payload: ", payload);
 
-            const responseData = await client.request.invokeTemplate("postSummarize", { body: JSON.stringify(payload) });
+            const options = {
+                body: JSON.stringify(payload),
+                timeout: 60000
+            };
+            const responseData = await client.request.invokeTemplate("postSummarize", options);
+
+            console.log("handle Summarize response data: ", responseData);
             const response = safeParseResponse(responseData);
-
+            console.log("handle Summarize response: ", response);
             if (response && response.summary) {
                 content.summaryText.textContent = response.summary;
                 showView('summary');
@@ -118,16 +189,42 @@ async function initReplyHelper() {
     buttons.summaryBack.addEventListener('click', () => showView('initial'));
 
     buttons.accept.addEventListener('click', async () => {
+        const draftRaw = buttons.accept.dataset.draft || '';
+        const draftHtml = ensureHtml(draftRaw);
+        console.log("found click. adding draftHtml", draftHtml);
         try {
-            const draftToInsert = buttons.accept.dataset.draft || '';
-            await client.interface.trigger("setValue", { id: "editor", text: draftToInsert });
-            client.interface.trigger("showNotify", { type: "success", message: "Draft inserted into reply." });
-            showView('initial');
-        } catch (error) {
-            console.error("Failed to set editor value:", error);
-            client.interface.trigger("showNotify", { type: "danger", message: "Could not insert draft." });
+            await client.interface.trigger("setValue", { id: "editor", text: draftHtml });
+        } catch (err) {
+            console.error("Draft insert failed:", err);
+            await client.interface.trigger("showNotify", { type: "danger", message: "Could not insert draft." });
+            return;
         }
+
+        await client.interface.trigger("showNotify", { type: "success", message: "Draft inserted into reply." });
+        await client.interface.trigger("hide");
     });
+
+    function ensureHtml(str) {
+        if (/<[a-z][\s\S]*>/i.test(str)) return str;
+
+        const paragraphs = str.split(/\n\s*\n/);
+
+        return paragraphs
+            .map(p => {
+                if (p.trim() === '') {
+                    return '<p>&nbsp;</p>';
+                }
+                const safe = escapeHtml(p);
+                return `<p>${safe.replace(/\n/g, '<br>')}</p>`;
+            })
+            .join('');
+    }
+
+    function escapeHtml(s) {
+        return s.replace(/[&<>"]/g, c => (
+            { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[c]
+        ));
+    }
 
     buttons.discard.addEventListener('click', () => {
         draftActionGroups.initial.classList.add('hidden');
@@ -140,8 +237,3 @@ async function initReplyHelper() {
 }
 
 initReplyHelper();
-
-// NEU: Exportieren für Tests
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { safeParseResponse, getErrorMessage, formatConversations };
-}

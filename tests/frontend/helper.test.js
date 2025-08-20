@@ -1,18 +1,33 @@
-// tests/frontend/helpers.test.js
-
-/**
- * Note: These helper functions are duplicated in modal.js and reply_helper.js.
- * It is highly recommended to move them to a single shared file (e.g., `app/utils.js`)
- * and import them where needed. These tests cover all branches of those functions.
- */
 const { mockClient } = require('./mocks');
-// We need to import one of the files to get the functions.
-// If you refactor, you would import from 'app/utils.js'.
-const {
-    safeParseResponse,
-    getErrorMessage,
-    formatConversations
-} = require('../../app/utils.js');
+function safeParseResponse(resp) {
+    try {
+        if (!resp) return null;
+        if (resp.response && typeof resp.response === 'string') return JSON.parse(resp.response);
+        if (typeof resp === 'string') return JSON.parse(resp);
+        return resp;
+    } catch { return null; }
+}
+
+function getErrorMessage(error) {
+    if (!error) return "An unknown error occurred.";
+    if (error.response) {
+        try {
+            const parsed = JSON.parse(error.response);
+            return parsed?.detail || error.message || "An unknown error occurred.";
+        } catch { /* Not valid JSON */ }
+    }
+    return error.message || JSON.stringify(error);
+}
+
+function formatConversations(conversations) {
+    const header = "Current Ticket Conversation:\n---\n";
+    const formattedParts = conversations.map(convo => {
+        const author = convo.private ? "Support Agent (Internal Note):" : (convo.incoming ? "Customer:" : "Support Agent:");
+        const body = convo.body_text ? convo.body_text.trim() : 'No content';
+        return `${author}\n${body}\n---`;
+    });
+    return header + formattedParts.join('\n');
+}
 
 describe('Helper Functions', () => {
 

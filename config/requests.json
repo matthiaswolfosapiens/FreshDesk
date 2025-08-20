@@ -1,9 +1,9 @@
 {
   "getProductTypes": {
     "schema": {
-      "protocol": "https",
+      "protocol": "http",
       "method": "GET",
-      "host": "backend.local",
+      "host": "<%= iparam.backend_url %>",
       "path": "/product-types",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>"
@@ -12,9 +12,9 @@
   },
   "postQuery": {
     "schema": {
-      "protocol": "https",
+      "protocol": "http",
       "method": "POST",
-      "host": "backend.local",
+      "host": "<%= iparam.backend_url %>",
       "path": "/query",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>",
@@ -24,9 +24,9 @@
   },
   "postRating": {
     "schema": {
-      "protocol": "https",
+      "protocol": "http",
       "method": "POST",
-      "host": "backend.local",
+      "host": "<%= iparam.backend_url %>",
       "path": "/rate",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>",
@@ -36,9 +36,9 @@
   },
   "postDraftReply": {
     "schema": {
-      "protocol": "https",
+      "protocol": "http",
       "method": "POST",
-      "host": "backend.local",
+      "host": "<%= iparam.backend_url %>",
       "path": "/draft-reply",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>",
@@ -48,9 +48,9 @@
   },
   "postSummarize": {
     "schema": {
-      "protocol": "https",
+      "protocol": "http",
       "method": "POST",
-      "host": "backend.local",
+      "host": "<%= iparam.backend_url %>",
       "path": "/summarize",
       "headers": {
         "Authorization": "Bearer <%= iparam.api_key %>",

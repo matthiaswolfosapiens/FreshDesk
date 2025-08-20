@@ -1,10 +1,34 @@
-/**
- * modal.js
- * This script contains all the logic for the AI Assistant chat interface
- * that runs inside the modal window.
- */
-const { safeParseResponse, getErrorMessage, formatConversations } = require('./utils.js');
+// modal.js (überarbeitet: sichere interface-Aufrufe, ID-Sanitizing, zuverlässiges Aufräumen)
 
+function safeParseResponse(resp) {
+    try {
+        if (!resp) return null;
+        if (resp.response && typeof resp.response === 'string') return JSON.parse(resp.response);
+        if (typeof resp === 'string') return JSON.parse(resp);
+        return resp;
+    } catch { return null; }
+}
+
+function getErrorMessage(error) {
+    if (!error) return "An unknown error occurred.";
+    if (error.response) {
+        try {
+            const parsed = JSON.parse(error.response);
+            return parsed?.detail || error.message || "An unknown error occurred.";
+        } catch { /* Not valid JSON */ }
+    }
+    return error.message || JSON.stringify(error);
+}
+
+function formatConversations(conversations) {
+    const header = "Current Ticket Conversation:\n---\n";
+    const formattedParts = conversations.map(convo => {
+        const author = convo.private ? "Support Agent (Internal Note):" : (convo.incoming ? "Customer:" : "Support Agent:");
+        const body = convo.body_text ? convo.body_text.trim() : 'No content';
+        return `${author}\n${body}\n---`;
+    });
+    return header + formattedParts.join('\n');
+}
 
 async function initModal() {
     const chatHistoryEl = document.getElementById('chat-history');
@@ -15,6 +39,11 @@ async function initModal() {
     const useTicketContextCheckbox = document.getElementById('use-ticket-context');
     const chatHistory = [];
 
+    // Track auto-selected product types (original values)
+    const autoSelectedProductTypes = new Set();
+    // Map product value -> sanitized DOM id
+    const productValueToId = new Map();
+
     let client;
     try {
         client = await app.initialized();
@@ -24,27 +53,123 @@ async function initModal() {
         return;
     }
 
+    // --- helper: safe trigger (prevents Interface API errors) ---
+    async function safeTrigger(action, payload = {}) {
+        try {
+            if (client && client.interface && typeof client.interface.trigger === 'function') {
+                return await client.interface.trigger(action, payload);
+            } else {
+                console.warn(`Interface API not available for action "${action}"`);
+            }
+        } catch (e) {
+            // don't rethrow — log and continue
+            console.warn(`safeTrigger failed for "${action}":`, e);
+        }
+    }
+
+    // sanitize a string to a valid, predictable DOM id
+    function makeSafeId(value) {
+        return `pt-${String(value).trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_-]/g, '')}`;
+    }
+
+    // Normalize ticket field into array of product type strings
+    function parseTicketProductTypes(raw) {
+        if (!raw) return [];
+        if (Array.isArray(raw)) return raw.map(x => String(x).trim()).filter(Boolean);
+        if (typeof raw === 'string') {
+            // try JSON parse
+            try {
+                const maybe = JSON.parse(raw);
+                if (Array.isArray(maybe)) return maybe.map(x => String(x).trim()).filter(Boolean);
+            } catch (e) { /* not JSON */ }
+            return raw.split(',').map(s => s.trim()).filter(Boolean);
+        }
+        return [String(raw).trim()].filter(Boolean);
+    }
+
     async function checkAndSelectProductType() {
+        // re-evaluate autoSelectedProductTypes: clear it and set new ones
+        autoSelectedProductTypes.clear();
+
         try {
             const ticketData = await client.data.get('ticket');
-            const productTypeFromTicket = ticketData.ticket.custom_fields.application;
-            if (productTypeFromTicket) {
-                const checkbox = document.getElementById(`pt-${productTypeFromTicket}`);
+            const raw = ticketData?.ticket?.custom_fields?.application;
+            const productTypesFromTicket = parseTicketProductTypes(raw);
+
+            if (!productTypesFromTicket || productTypesFromTicket.length === 0) {
+                console.warn("No product types found on ticket to auto-select.");
+                return;
+            }
+
+            productTypesFromTicket.forEach(pt => {
+                const safeId = productValueToId.get(pt) || makeSafeId(pt);
+                const checkbox = document.getElementById(safeId);
                 if (checkbox) {
-                    checkbox.checked = true;
-                    client.interface.trigger("showNotify", { type: "info", message: `Product area '${productTypeFromTicket}' auto-selected.` });
+                    // only mark as auto-selected if it wasn't already checked by the user
+                    if (!checkbox.checked) {
+                        checkbox.checked = true;
+                        autoSelectedProductTypes.add(pt);
+                    } else {
+                        // If user already had it checked, we don't add to autoSelectedProductTypes
+                        // so we won't uncheck it when context is removed.
+                    }
+                } else {
+                    console.warn(`Product type '${pt}' from ticket not found in the available list.`);
                 }
+            });
+
+            if (autoSelectedProductTypes.size > 0) {
+                await safeTrigger("showNotify", { type: "info", message: `Auto-selected product area(s): ${Array.from(autoSelectedProductTypes).join(', ')}` });
+            } else {
+                await safeTrigger("showNotify", { type: "info", message: `Ticket product areas present but already selected or not available.` });
             }
         } catch (error) {
-            console.warn("Could not auto-select product type from ticket:", error);
+            console.warn("Could not auto-select product type(s) from ticket:", error);
+        }
+    }
+
+    function clearAutoSelectedProductTypes() {
+        try {
+            // Uncheck only those we auto-selected
+            autoSelectedProductTypes.forEach(pt => {
+                const safeId = productValueToId.get(pt) || makeSafeId(pt);
+                const checkbox = document.getElementById(safeId);
+                if (checkbox) {
+                    checkbox.checked = false;
+                }
+            });
+        } catch (e) {
+            console.warn("Error while clearing auto-selected product types:", e);
+        } finally {
+            // always clear the set, even if notification fails
+            autoSelectedProductTypes.clear();
+            // notify safely
+            if (client && client.interface) {
+                safeTrigger("showNotify", {
+                    type: "info",
+                    message: `Auto-selected product area(s) cleared.`
+                });
+            }
         }
     }
 
     chatForm.addEventListener('submit', onFormSubmit);
     chatHistoryEl.addEventListener('click', onRatingClick);
+
     useTicketContextCheckbox.addEventListener('change', async (event) => {
         if (event.target.checked) {
-            await checkAndSelectProductType();
+            // ensure product types are available
+            const anyCheckbox = productTypesContainer.querySelector('input[type="checkbox"]');
+            if (!anyCheckbox) {
+                await loadProductTypes(); // loadProductTypes will call checkAndSelectProductType if checkbox is checked
+                // still call again just to be robust
+                await checkAndSelectProductType();
+            } else {
+                await checkAndSelectProductType();
+            }
+        } else {
+            // clear only auto-selected entries, keep user selections intact
+            clearAutoSelectedProductTypes();
         }
     });
 
@@ -130,13 +255,19 @@ async function initModal() {
             const data = await client.request.invokeTemplate("getProductTypes", {});
             const productArray = safeParseResponse(data) || [];
             productTypesContainer.innerHTML = '';
+            productValueToId.clear();
+
             productArray.forEach(pt => {
                 const div = document.createElement('div');
                 div.className = 'product-item';
-                div.innerHTML = `<input type="checkbox" id="pt-${pt}" value="${pt}"><label for="pt-${pt}">${pt}</label>`;
+                const safeId = makeSafeId(pt);
+                productValueToId.set(pt, safeId);
+
+                div.innerHTML = `<input type="checkbox" id="${safeId}" value="${pt}"><label for="${safeId}">${pt}</label>`;
                 productTypesContainer.appendChild(div);
             });
 
+            // If checkbox is checked, apply auto-select
             if (useTicketContextCheckbox.checked) {
                 await checkAndSelectProductType();
             }
@@ -159,7 +290,7 @@ async function initModal() {
             console.log("Rating submitted successfully.");
         } catch (error) {
             console.error("Failed to submit rating:", error);
-            client.interface.trigger("showNotify", { type: "danger", message: "Could not save rating." });
+            safeTrigger("showNotify", { type: "danger", message: "Could not save rating." });
         }
     }
 
@@ -182,6 +313,8 @@ async function initModal() {
                 product_types_to_search: selectedProductTypes,
                 ticket_conversation_context: context
             };
+
+            console.log("Payload:", payload);
             const responseData = await queryBackend(payload);
 
             if (responseData && responseData.answer) {
@@ -221,15 +354,10 @@ async function initModal() {
     }
 
     // --- Initial Data Loading ---
-    loadProductTypes();
+    await loadProductTypes();
     if (useTicketContextCheckbox.checked) {
-        checkAndSelectProductType();
+        await checkAndSelectProductType();
     }
 }
 
 document.addEventListener('DOMContentLoaded', initModal);
-
-// NEU: Exportieren für Tests
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { safeParseResponse, getErrorMessage, formatConversations };
-}

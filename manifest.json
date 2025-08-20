@@ -1,7 +1,7 @@
 {
   "platform-version": "3.0",
   "domains": {
-    "backend.local": "<%= iparam.backend_url %>"
+    "backend": "<%= iparam.backend_url %>"
   },
   "features": {
     "request": {},
@@ -33,7 +33,7 @@
     }
   },
   "engines": {
-    "node": "18.18.2",
+    "node": "18.20.8",
     "fdk": "9.6.0"
   }
 }

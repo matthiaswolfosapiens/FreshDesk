@@ -5,13 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a02ac437-7bd9-4fca-a43a-6bca63bfb189" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/app/utils.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/frontend/helper.test.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/babel.config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/modal.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/modal.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/modal.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/modal.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/reply_helper.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/reply_helper.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/reply_helper.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/reply_helper.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/utils.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/config/requests.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/requests.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/jest.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/jest.config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/manifest.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/frontend/helper.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/frontend/helper.test.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/frontend/modal.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/frontend/modal.test.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/frontend/reply_helper.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/frontend/reply_helper.test.js" afterDir="false" />
     </list>
@@ -57,7 +64,7 @@
     "DefaultHtmlFileTemplate": "HTML File",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "05674344",
+    "git-widget-placeholder": "6ba4a48b",
     "last_opened_file_path": "/Users/matthiaswolf/WebstormProjects/FreshWorks",
     "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",
@@ -65,6 +72,7 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "/Applications/WebStorm.app/Contents/plugins/javascript-plugin/jsLanguageServicesImpl/external",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>

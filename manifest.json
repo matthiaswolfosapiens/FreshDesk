@@ -12,11 +12,12 @@
     "common": {
       "requests": {
         "getProductTypes": {},
-        "postQuery": {},
         "postRating": {},
         "getTicketConversations": {},
-        "postDraftReply": {},
-        "postSummarize": {}
+        "startQueryTask": {},
+        "startDraftTask": {},
+        "startSummarizeTask": {},
+        "getTaskStatus": {}
       }
     },
     "support_ticket": {

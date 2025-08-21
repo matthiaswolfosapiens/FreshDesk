@@ -38,25 +38,26 @@
       <button id="copy-draft-btn" class="copy-button" title="Copy to Clipboard"><i class="fas fa-copy"></i></button>
     </div>
     <div id="draft-text-content" class="content-box"></div>
-    <div id="draft-actions-initial" class="button-group">
-      <button id="accept-btn" class="fw-button fw-button--success">
-        <i class="fas fa-check"></i> Accept
-      </button>
-      <button id="discard-btn" class="fw-button fw-button--danger">
-        <i class="fas fa-times"></i> Discard
-      </button>
-    </div>
-    <div id="draft-actions-discarded" class="button-group hidden">
-      <p>Do you want to generate a new draft?</p>
-      <button id="regenerate-btn" class="fw-button fw-button--primary">
-        <i class="fas fa-sync-alt"></i> Regenerate
-      </button>
-      <button id="close-btn" class="fw-button">
-        <i class="fas fa-door-closed"></i> Close
-      </button>
+    <div id="draft-actions-container" class="button-group">
+      <div id="draft-actions-initial" class="button-group">
+        <button id="accept-btn" class="fw-button fw-button--success">
+          <i class="fas fa-check"></i> Accept
+        </button>
+        <button id="discard-btn" class="fw-button fw-button--danger">
+          <i class="fas fa-times"></i> Discard
+        </button>
+      </div>
+      <div id="draft-actions-discarded" class="button-group hidden">
+        <p>Do you want to generate a new draft?</p>
+        <button id="regenerate-btn" class="fw-button fw-button--primary">
+          <i class="fas fa-sync-alt"></i> Regenerate
+        </button>
+        <button id="close-btn" class="fw-button">
+          <i class="fas fa-door-closed"></i> Close
+        </button>
+      </div>
     </div>
   </div>
-
   <div id="summary-view" class="hidden">
     <div class="view-header">
       <button id="summary-back-btn" class="back-button"><i class="fas fa-arrow-left"></i></button>
@@ -67,7 +68,7 @@
   </div>
 
 </div>
-
+<script src="utils.js"></script>
 <script  src="reply_helper.js"></script>
 </body>
 </html>

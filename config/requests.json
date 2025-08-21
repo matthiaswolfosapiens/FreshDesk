@@ -5,21 +5,7 @@
       "method": "GET",
       "host": "<%= iparam.backend_url %>",
       "path": "/product-types",
-      "headers": {
-        "Authorization": "Bearer <%= iparam.api_key %>"
-      }
-    }
-  },
-  "postQuery": {
-    "schema": {
-      "protocol": "http",
-      "method": "POST",
-      "host": "<%= iparam.backend_url %>",
-      "path": "/query",
-      "headers": {
-        "Authorization": "Bearer <%= iparam.api_key %>",
-        "Content-Type": "application/json"
-      }
+      "headers": { "Authorization": "Bearer <%= iparam.api_key %>" }
     }
   },
   "postRating": {
@@ -28,34 +14,7 @@
       "method": "POST",
       "host": "<%= iparam.backend_url %>",
       "path": "/rate",
-      "headers": {
-        "Authorization": "Bearer <%= iparam.api_key %>",
-        "Content-Type": "application/json"
-      }
-    }
-  },
-  "postDraftReply": {
-    "schema": {
-      "protocol": "http",
-      "method": "POST",
-      "host": "<%= iparam.backend_url %>",
-      "path": "/draft-reply",
-      "headers": {
-        "Authorization": "Bearer <%= iparam.api_key %>",
-        "Content-Type": "application/json"
-      }
-    }
-  },
-  "postSummarize": {
-    "schema": {
-      "protocol": "http",
-      "method": "POST",
-      "host": "<%= iparam.backend_url %>",
-      "path": "/summarize",
-      "headers": {
-        "Authorization": "Bearer <%= iparam.api_key %>",
-        "Content-Type": "application/json"
-      }
+      "headers": { "Authorization": "Bearer <%= iparam.api_key %>", "Content-Type": "application/json" }
     }
   },
   "getTicketConversations": {
@@ -63,10 +22,44 @@
       "method": "GET",
       "host": "<%= iparam.freshdesk_domain %>",
       "path": "/api/v2/tickets/<%= context.ticket_id %>/conversations",
-      "headers": {
-        "Authorization": "Basic <%= encode(iparam.freshdesk_api_key + ':X') %>",
-        "Content-Type": "application/json"
-      }
+      "headers": { "Authorization": "Basic <%= encode(iparam.freshdesk_api_key + ':X') %>", "Content-Type": "application/json" }
+    }
+  },
+
+  "startQueryTask": {
+    "schema": {
+      "protocol": "http",
+      "method": "POST",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/start-task/query",
+      "headers": { "Authorization": "Bearer <%= iparam.api_key %>", "Content-Type": "application/json" }
+    }
+  },
+  "startDraftTask": {
+    "schema": {
+      "protocol": "http",
+      "method": "POST",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/start-task/draft-reply",
+      "headers": { "Authorization": "Bearer <%= iparam.api_key %>", "Content-Type": "application/json" }
+    }
+  },
+  "startSummarizeTask": {
+    "schema": {
+      "protocol": "http",
+      "method": "POST",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/start-task/summarize",
+      "headers": { "Authorization": "Bearer <%= iparam.api_key %>", "Content-Type": "application/json" }
+    }
+  },
+  "getTaskStatus": {
+    "schema": {
+      "protocol": "http",
+      "method": "GET",
+      "host": "<%= iparam.backend_url %>",
+      "path": "/task-status/<%= context.task_id %>",
+      "headers": { "Authorization": "Bearer <%= iparam.api_key %>" }
     }
   }
 }

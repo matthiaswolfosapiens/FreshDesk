@@ -1,5 +1,3 @@
-// modal.js (überarbeitet: sichere interface-Aufrufe, ID-Sanitizing, zuverlässiges Aufräumen)
-
 function safeParseResponse(resp) {
     try {
         if (!resp) return null;
@@ -7,27 +5,6 @@ function safeParseResponse(resp) {
         if (typeof resp === 'string') return JSON.parse(resp);
         return resp;
     } catch { return null; }
-}
-
-function getErrorMessage(error) {
-    if (!error) return "An unknown error occurred.";
-    if (error.response) {
-        try {
-            const parsed = JSON.parse(error.response);
-            return parsed?.detail || error.message || "An unknown error occurred.";
-        } catch { /* Not valid JSON */ }
-    }
-    return error.message || JSON.stringify(error);
-}
-
-function formatConversations(conversations) {
-    const header = "Current Ticket Conversation:\n---\n";
-    const formattedParts = conversations.map(convo => {
-        const author = convo.private ? "Support Agent (Internal Note):" : (convo.incoming ? "Customer:" : "Support Agent:");
-        const body = convo.body_text ? convo.body_text.trim() : 'No content';
-        return `${author}\n${body}\n---`;
-    });
-    return header + formattedParts.join('\n');
 }
 
 async function initModal() {
@@ -47,11 +24,13 @@ async function initModal() {
     let client;
     try {
         client = await app.initialized();
+        console.log("Modal App: Client initialized");
     } catch (error) {
         console.error("Modal initialization failed:", error);
         renderMessage('error', 'Could not initialize the app. Please try closing and reopening the modal.');
         return;
     }
+
 
     // --- helper: safe trigger (prevents Interface API errors) ---
     async function safeTrigger(action, payload = {}) {
@@ -66,6 +45,7 @@ async function initModal() {
             console.warn(`safeTrigger failed for "${action}":`, e);
         }
     }
+
 
     // sanitize a string to a valid, predictable DOM id
     function makeSafeId(value) {
@@ -86,6 +66,7 @@ async function initModal() {
         }
         return [String(raw).trim()].filter(Boolean);
     }
+
 
     async function checkAndSelectProductType() {
         autoSelectedProductTypes.clear();
@@ -126,6 +107,7 @@ async function initModal() {
             console.warn("Could not auto-select product type(s) from ticket:", error);
         }
     }
+
 
     function clearAutoSelectedProductTypes() {
         try {
@@ -179,40 +161,31 @@ async function initModal() {
         }
     });
 
-    function renderMessage(sender, data) {
-        const lastRatingContainer = chatHistoryEl.querySelector('.rating-buttons');
-        if (lastRatingContainer) {
-            lastRatingContainer.remove();
-        }
 
+    function renderMessage(sender, data) {
         const div = document.createElement('div');
         div.className = `message ${sender}-message`;
 
-        if (sender === 'assistant' && typeof data === 'object' && data.answer) {
+        // Always create a span for the assistant to avoid null reference
+        if (sender === 'assistant') {
             const textNode = document.createElement('span');
-            textNode.textContent = data.answer;
+            if (typeof data === 'object' && data.answer) {
+                textNode.textContent = data.answer;
+                div.dataset.conversationId = data.conversation_id;
+                div.dataset.sourceTicketIds = JSON.stringify(data.source_ticket_ids);
+            } else if (typeof data === 'string') {
+                textNode.textContent = data;
+            }
             div.appendChild(textNode);
-            div.dataset.conversationId = data.conversation_id;
-            div.dataset.sourceTicketIds = JSON.stringify(data.source_ticket_ids);
-
-            const ratingContainer = document.createElement('div');
-            ratingContainer.className = 'rating-buttons';
-            ratingContainer.innerHTML = `
-              <span class="rating-prompt">How helpful was this answer?</span>
-              <button class="smiley-btn rating-1" data-rating="1" title="Very poor"><i class="fas fa-sad-tear"></i></button>
-              <button class="smiley-btn rating-2" data-rating="2" title="Poor"><i class="fas fa-frown"></i></button>
-              <button class="smiley-btn rating-3" data-rating="3" title="Neutral"><i class="fas fa-meh"></i></button>
-              <button class="smiley-btn rating-4" data-rating="4" title="Good"><i class="fas fa-smile"></i></button>
-              <button class="smiley-btn rating-5" data-rating="5" title="Excellent"><i class="fas fa-laugh-beam"></i></button>
-            `;
-            div.appendChild(ratingContainer);
         } else {
             div.textContent = data;
         }
 
         chatHistoryEl.prepend(div);
         chatHistoryEl.scrollTop = 0;
+        return div;
     }
+
 
     function showLoading(isLoading) {
         if (sendButton) sendButton.disabled = isLoading;
@@ -229,12 +202,14 @@ async function initModal() {
         }
     }
 
+
     async function getSimpleTicketContext() {
         try {
             const data = await client.data.get('ticket');
             return `Ticket Context:\nSubject: ${data.ticket.subject || ''}\nDescription: ${data.ticket.description_text || ''}\n---`;
         } catch { return ''; }
     }
+
 
     async function fetchTicketContext() {
         try {
@@ -285,23 +260,6 @@ async function initModal() {
         }
     }
 
-    async function queryBackend(payload) {
-        const options = { body: JSON.stringify(payload) };
-        const resp = await client.request.invokeTemplate("postQuery", options);
-        return safeParseResponse(resp);
-    }
-
-    async function submitRating(conversationId, sourceTicketIds, rating) {
-        try {
-            const payload = { conversation_id: conversationId, source_ticket_ids: sourceTicketIds, rating: rating };
-            await client.request.invokeTemplate("postRating", { body: JSON.stringify(payload) });
-            console.log("Rating submitted successfully.");
-        } catch (error) {
-            console.error("Failed to submit rating:", error);
-            safeTrigger("showNotify", { type: "danger", message: "Could not save rating." });
-        }
-    }
-
     async function onFormSubmit(event) {
         event.preventDefault();
         const userQuery = userInputEl.value.trim();
@@ -312,6 +270,7 @@ async function initModal() {
         showLoading(true);
 
         try {
+            console.log("Modal App: Fetching context for new query.");
             const context = useTicketContextCheckbox.checked ? await fetchTicketContext() : '';
             const selectedProductTypes = Array.from(productTypesContainer.querySelectorAll('input:checked')).map(cb => cb.value);
 
@@ -322,20 +281,94 @@ async function initModal() {
                 ticket_conversation_context: context
             };
 
-            console.log("Payload:", payload);
-            const responseData = await queryBackend(payload);
+            console.log("Modal App: Sending payload to /start-task/query", payload);
+            const startResponse = await client.request.invokeTemplate("startQueryTask", {
+                body: JSON.stringify(payload)
+            });
 
-            if (responseData && responseData.answer) {
-                renderMessage('assistant', responseData);
-                chatHistory.push({ question: userQuery, answer: responseData.answer });
-            } else {
-                renderMessage('error', 'No valid response received from the assistant.');
+            const { task_id } = safeParseResponse(startResponse);
+            console.log(`Modal App: Task started successfully. Task ID: ${task_id}`);
+
+            if (!task_id) {
+                throw new Error("Did not receive a valid task_id from the backend.");
             }
+
+            console.log("Modal App: Starting to poll for task status.");
+
+            let assistantMsgContainer = null;
+
+            pollTaskStatus(
+                client,
+                task_id,
+                (currentText) => { // onToken
+                    if (currentText && !assistantMsgContainer) {
+                        showLoading(false);
+                        assistantMsgContainer = renderMessage('assistant', currentText);
+                    } else if (assistantMsgContainer) {
+                        assistantMsgContainer.querySelector('span').textContent = currentText;
+                    }
+                },
+// Dies ist der onComplete-Teil innerhalb Ihrer pollTaskStatus-Funktion
+
+                (finalResult) => { // onComplete
+                    console.log("Modal App: Polling complete. Received final result:", finalResult);
+
+                    if (!assistantMsgContainer) {
+                        showLoading(false);
+                        assistantMsgContainer = renderMessage('assistant', finalResult.answer);
+                    } else {
+                        assistantMsgContainer.querySelector('span').textContent = finalResult.answer;
+                    }
+
+                    const conversationId = finalResult.conversation_id || task_id;
+                    const sourceTicketIds = finalResult.source_ticket_ids || [];
+
+                    assistantMsgContainer.dataset.conversationId = conversationId;
+                    assistantMsgContainer.dataset.sourceTicketIds = JSON.stringify(sourceTicketIds);
+
+                    if (!assistantMsgContainer.querySelector('.rating-buttons')) {
+                        const ratingContainer = document.createElement('div');
+                        ratingContainer.className = 'rating-buttons';
+                        ratingContainer.innerHTML = `
+                              <span class="rating-prompt">How helpful was this answer?</span>
+                              <button class="smiley-btn" data-rating="1" title="Very poor"><i class="fas fa-sad-tear"></i></button>
+                              <button class="smiley-btn" data-rating="2" title="Poor"><i class="fas fa-frown"></i></button>
+                              <button class="smiley-btn" data-rating="3" title="Neutral"><i class="fas fa-meh"></i></button>
+                              <button class="smiley-btn" data-rating="4" title="Good"><i class="fas fa-smile"></i></button>
+                              <button class="smiley-btn" data-rating="5" title="Excellent"><i class="fas fa-laugh-beam"></i></button>
+                            `;
+                        assistantMsgContainer.appendChild(ratingContainer);
+                    }
+                    const lastQuestion = chatHistory.length > 0 ? chatHistory[chatHistory.length - 1].question : null;
+                    if (lastQuestion !== userQuery) {
+                        chatHistory.push({ question: userQuery, answer: finalResult.answer });
+                    }
+
+                    console.log("Modal App: UI updated with final answer and rating buttons.");
+                },
+                (errorMessage) => { // onError
+                    console.error("Modal App: Polling failed with error:", errorMessage);
+                    showLoading(false);
+                    renderMessage('error', `Error: ${errorMessage}`);
+                }
+            );
+
         } catch (error) {
-            console.error('Backend query failed:', error);
-            renderMessage('error', `Error: ${getErrorMessage(error)}`);
-        } finally {
+            console.error("Modal App: Error in onFormSubmit:", error);
             showLoading(false);
+            renderMessage('error', `Error: ${getErrorMessage(error)}`);
+        }
+    }
+
+    async function submitRating(conversationId, sourceTicketIds, rating) {
+        try {
+            const payload = { conversation_id: conversationId, source_ticket_ids: sourceTicketIds, rating: rating };
+            console.log("Modal App: Submitting rating:", payload);
+            await client.request.invokeTemplate("postRating", { body: JSON.stringify(payload) });
+            console.log("Modal App: Rating submitted successfully.");
+        } catch (error) {
+            console.error("Modal App: Failed to submit rating:", error);
+            safeTrigger("showNotify", { type: "danger", message: "Could not save rating." });
         }
     }
 
@@ -362,10 +395,12 @@ async function initModal() {
     }
 
     // --- Initial Data Loading ---
+    console.log("Modal App: Starting initial data load (product types).");
     await loadProductTypes();
     if (useTicketContextCheckbox.checked) {
         await checkAndSelectProductType();
     }
+    console.log("Modal App: Initialization complete.");
 }
 
 document.addEventListener('DOMContentLoaded', initModal);

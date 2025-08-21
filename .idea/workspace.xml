@@ -5,22 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a02ac437-7bd9-4fca-a43a-6bca63bfb189" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/babel.config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/modal.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/modal.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/modal.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/modal.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/reply_helper.html" beforeDir="false" afterPath="$PROJECT_DIR$/app/reply_helper.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/reply_helper.js" beforeDir="false" afterPath="$PROJECT_DIR$/app/reply_helper.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/utils.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/config/requests.json" beforeDir="false" afterPath="$PROJECT_DIR$/config/requests.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/jest.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/jest.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/frontend/helper.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/frontend/helper.test.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/frontend/modal.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/frontend/modal.test.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/frontend/reply_helper.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/frontend/reply_helper.test.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/styles/reply_helper.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/styles/reply_helper.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/styles/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/app/styles/style.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -64,7 +55,8 @@
     "DefaultHtmlFileTemplate": "HTML File",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "6ba4a48b",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
     "last_opened_file_path": "/Users/matthiaswolf/WebstormProjects/FreshWorks",
     "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",
@@ -99,6 +91,7 @@
       <option name="presentableId" value="Default" />
       <updated>1754925198751</updated>
       <workItem from="1754925199758" duration="13578000" />
+      <workItem from="1755690423427" duration="11202000" />
     </task>
     <servers />
   </component>

@@ -88,12 +88,11 @@ async function initModal() {
     }
 
     async function checkAndSelectProductType() {
-        // re-evaluate autoSelectedProductTypes: clear it and set new ones
         autoSelectedProductTypes.clear();
 
         try {
             const ticketData = await client.data.get('ticket');
-            const raw = ticketData?.ticket?.custom_fields?.application;
+            const raw = ticketData?.ticket?.custom_fields?.cf_track_and_trace;
             const productTypesFromTicket = parseTicketProductTypes(raw);
 
             if (!productTypesFromTicket || productTypesFromTicket.length === 0) {
@@ -170,6 +169,13 @@ async function initModal() {
         } else {
             // clear only auto-selected entries, keep user selections intact
             clearAutoSelectedProductTypes();
+        }
+    });
+
+    userInputEl.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && !event.shiftKey) {
+            event.preventDefault();
+            chatForm.requestSubmit();
         }
     });
 
@@ -254,10 +260,13 @@ async function initModal() {
         try {
             const data = await client.request.invokeTemplate("getProductTypes", {});
             const productArray = safeParseResponse(data) || [];
+
+            const filteredProducts = productArray.filter(pt => pt.toLowerCase() !== 'unknown');
+
             productTypesContainer.innerHTML = '';
             productValueToId.clear();
 
-            productArray.forEach(pt => {
+            filteredProducts.forEach(pt => {
                 const div = document.createElement('div');
                 div.className = 'product-item';
                 const safeId = makeSafeId(pt);
@@ -267,7 +276,6 @@ async function initModal() {
                 productTypesContainer.appendChild(div);
             });
 
-            // If checkbox is checked, apply auto-select
             if (useTicketContextCheckbox.checked) {
                 await checkAndSelectProductType();
             }

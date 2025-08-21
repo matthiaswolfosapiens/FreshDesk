@@ -12,7 +12,7 @@
 <div class="reply-helper-container">
 
   <div id="initial-view">
-    <h4>AI Assistant</h4>
+    <h4>Osapiens AI Assistant</h4>
     <p>Choose an action to get started.</p>
     <div class="button-group">
       <button id="draft-reply-btn" class="fw-button fw-button--primary">
@@ -33,8 +33,9 @@
 
   <div id="draft-view" class="hidden">
     <div class="view-header">
-      <button id="draft-back-btn" class="back-button"><i class="fas fa-arrow-left"></i> Back</button>
+      <button id="draft-back-btn" class="back-button"><i class="fas fa-arrow-left"></i></button>
       <h4>Generated Draft</h4>
+      <button id="copy-draft-btn" class="copy-button" title="Copy to Clipboard"><i class="fas fa-copy"></i></button>
     </div>
     <div id="draft-text-content" class="content-box"></div>
     <div id="draft-actions-initial" class="button-group">
@@ -58,13 +59,15 @@
 
   <div id="summary-view" class="hidden">
     <div class="view-header">
-      <button id="summary-back-btn" class="back-button"><i class="fas fa-arrow-left"></i> Back</button>
+      <button id="summary-back-btn" class="back-button"><i class="fas fa-arrow-left"></i></button>
       <h4>Ticket Summary</h4>
+      <button id="copy-summary-btn" class="copy-button" title="Copy to Clipboard"><i class="fas fa-copy"></i></button>
     </div>
     <div id="summary-text-content" class="content-box"></div>
   </div>
 
 </div>
+
 <script  src="reply_helper.js"></script>
 </body>
 </html>

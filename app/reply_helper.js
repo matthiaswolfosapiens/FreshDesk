@@ -56,6 +56,8 @@ async function initReplyHelper() {
         regenerate: document.getElementById('regenerate-btn'),
         close: document.getElementById('close-btn'),
         draftBack: document.getElementById('draft-back-btn'),
+        copyDraft: document.getElementById('copy-draft-btn'),
+        copySummary: document.getElementById('copy-summary-btn'),
         summaryBack: document.getElementById('summary-back-btn'),
     };
 
@@ -78,6 +80,37 @@ async function initReplyHelper() {
         }
     }
 
+    async function handleCopyToClipboard(textSourceElement, buttonElement) {
+        if (!textSourceElement || !buttonElement) return;
+
+        const textToCopy = textSourceElement.textContent;
+        const originalIcon = buttonElement.innerHTML;
+
+        const textArea = document.createElement("textarea");
+        textArea.value = textToCopy;
+        textArea.style.position = "fixed";
+        textArea.style.top = "-9999px";
+        textArea.style.left = "-9999px";
+        document.body.appendChild(textArea);
+
+        try {
+            textArea.select();
+            document.execCommand('copy');
+
+            buttonElement.innerHTML = '<i class="fas fa-check"></i>';
+            await client.interface.trigger("showNotify", { type: "success", message: "Copied to clipboard!" });
+
+            setTimeout(() => {
+                buttonElement.innerHTML = originalIcon;
+            }, 2000);
+
+        } catch (err) {
+            console.error('Failed to copy using execCommand:', err);
+            await client.interface.trigger("showNotify", { type: "danger", message: "Could not copy text." });
+        } finally {
+            document.body.removeChild(textArea);
+        }
+    }
     async function getTicketContextAndProductType() {
         console.log('getTicketContextAndProductType');
 
@@ -187,7 +220,8 @@ async function initReplyHelper() {
     buttons.summarize.addEventListener('click', handleSummarize);
     buttons.draftBack.addEventListener('click', () => showView('initial'));
     buttons.summaryBack.addEventListener('click', () => showView('initial'));
-
+    buttons.copyDraft.addEventListener('click', () => handleCopyToClipboard(content.draftText, buttons.copyDraft));
+    buttons.copySummary.addEventListener('click', () => handleCopyToClipboard(content.summaryText, buttons.copySummary));
     buttons.accept.addEventListener('click', async () => {
         const draftRaw = buttons.accept.dataset.draft || '';
         const draftHtml = ensureHtml(draftRaw);

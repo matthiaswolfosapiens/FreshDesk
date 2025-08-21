@@ -4,6 +4,7 @@ body, html {
   padding: 0;
   font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   background-color: #f8f9fa;
+  font-size: 16px; /* Increased base size */
 }
 
 .fw-widget-wrapper {
@@ -14,7 +15,7 @@ body, html {
 .chat-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 30px); /* Full height minus padding */
+  height: calc(100vh - 30px);
   background-color: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
@@ -26,16 +27,16 @@ body, html {
   padding: 15px;
   overflow-y: auto;
   display: flex;
-  /* 3. Newest Message on Top */
-  flex-direction: column-reverse; /* This flips the chat order */
+  flex-direction: column-reverse;
 }
 
 .message {
-  padding: 10px 15px;
+  padding: 12px 18px;
   border-radius: 18px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   max-width: 85%;
-  line-height: 1.4;
+  line-height: 1.6;
+  font-size: 16px; /* Larger chat text */
   opacity: 0;
   transform: translateY(10px);
   animation: fadeIn 0.3s forwards;
@@ -62,7 +63,7 @@ body, html {
   border-bottom-left-radius: 4px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
 .error-message {
@@ -71,6 +72,7 @@ body, html {
   align-self: center;
   width: 100%;
   text-align: center;
+  font-size: 16px; /* Larger error text */
 }
 
 /* 2. Product Selection Area */
@@ -83,30 +85,30 @@ body, html {
 
 .product-selection-area h4 {
   margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 14px;
+  margin-bottom: 12px;
+  font-size: 18px; /* Larger heading */
   color: #343a40;
 }
 
 /* 4. Grid Layout for Product Areas */
 #product-types-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
 }
 
 .product-item input[type="checkbox"] {
-  display: none; /* Hide the original checkbox */
+  display: none;
 }
 
 .product-item label {
   display: block;
-  padding: 8px 12px;
+  padding: 10px 14px;
   border: 1px solid #ced4da;
   border-radius: 20px;
   cursor: pointer;
   text-align: center;
-  font-size: 13px;
+  font-size: 15px; /* Bigger product labels */
   transition: all 0.2s ease-in-out;
   background-color: #fff;
 }
@@ -137,10 +139,10 @@ body, html {
   flex-grow: 1;
   border: 1px solid #ced4da;
   border-radius: 20px;
-  padding: 10px 15px;
+  padding: 12px 16px;
   resize: none;
-  font-size: 14px;
-  height: 40px;
+  font-size: 16px; /* Larger input text */
+  height: 44px;
   box-sizing: border-box;
 }
 
@@ -149,13 +151,14 @@ body, html {
   color: white;
   border: none;
   border-radius: 50%;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: background-color 0.2s;
+  font-size: 18px; /* Bigger icon */
 }
 
 #send-button:hover {
@@ -166,50 +169,64 @@ body, html {
 .context-toggle {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .context-toggle label {
-  font-size: 13px;
+  font-size: 15px; /* Bigger label */
   color: #495057;
 }
-/* Hiding the default checkbox is part of the custom toggle design */
+
 .context-toggle input[type="checkbox"] {
-  /* This would be a good place for a more advanced toggle switch style if needed */
+  /* Placeholder for a toggle style */
 }
 
 .rating-buttons {
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid #dee2e6;
-  width: 100%;
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
+  gap: 5px; /* GEÄNDERT: von 10px */
+  flex-wrap: nowrap; /* GEÄNDERT: zurück zu nowrap */
 }
 
-.rating-prompt { font-size: 12px; color: #6c757d; margin-right: auto; }
+.rating-prompt {
+  font-size: 13px; /* GEÄNDERT: von 14px */
+  color: #6c757d;
+  margin-right: auto;
+  white-space: nowrap; /* GEÄNDERT: zurück zu nowrap */
+}
+
 .smiley-btn {
-  background: none; border: none; cursor: pointer; color: #adb5bd;
-  font-size: 20px; padding: 5px; border-radius: 50%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #adb5bd;
+  font-size: 20px; /* GEÄNDERT: von 24px */
+  padding: 4px; /* GEÄNDERT: von 6px */
+  border-radius: 50%;
   transition: all 0.2s ease-in-out;
 }
+
 .rating-buttons:not(.disabled) .smiley-btn.rating-1:hover { color: #dc3545; transform: scale(1.2); }
 .rating-buttons:not(.disabled) .smiley-btn.rating-2:hover { color: #fd7e14; transform: scale(1.2); }
 .rating-buttons:not(.disabled) .smiley-btn.rating-3:hover { color: #ffc107; transform: scale(1.2); }
 .rating-buttons:not(.disabled) .smiley-btn.rating-4:hover { color: #20c997; transform: scale(1.2); }
 .rating-buttons:not(.disabled) .smiley-btn.rating-5:hover { color: #28a745; transform: scale(1.2); }
+
 .rating-buttons.disabled { pointer-events: none; }
 .rating-buttons.disabled .smiley-btn:not(.selected) { opacity: 0.3; }
+
 .smiley-btn.selected.rating-1 { color: #dc3545; }
 .smiley-btn.selected.rating-2 { color: #fd7e14; }
 .smiley-btn.selected.rating-3 { color: #ffc107; }
 .smiley-btn.selected.rating-4 { color: #20c997; }
 .smiley-btn.selected.rating-5 { color: #28a745; }
+
 .rating-feedback {
-  font-size: 13px;
+  font-size: 15px; /* Larger feedback */
   color: #28a745;
   font-weight: bold;
-  margin-left: 10px;
+  margin-left: 12px;
   white-space: nowrap;
 }
